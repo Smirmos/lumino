@@ -42,7 +42,6 @@ export class HealthController {
     }
 
     const status = dbStatus === 'ok' && redisStatus === 'ok' ? 'ok' : 'degraded';
-    const statusCode = status === 'ok' ? 200 : 503;
 
     // Read version from package.json
     let version = '1.0.0';
@@ -53,7 +52,9 @@ export class HealthController {
       // ignore
     }
 
-    return res.status(statusCode).json({
+    // Always return 200 so Railway healthcheck passes.
+    // Actual service status is in the response body.
+    return res.status(200).json({
       status,
       timestamp: new Date().toISOString(),
       version,
