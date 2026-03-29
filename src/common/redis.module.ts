@@ -10,7 +10,10 @@ import Redis from 'ioredis';
       useFactory: (configService: ConfigService) => {
         const url = configService.get<string>('REDIS_URL');
         if (!url) throw new Error('REDIS_URL is required');
-        return new Redis(url);
+        return new Redis(url, {
+          maxRetriesPerRequest: 3,
+          retryStrategy: (times) => Math.min(times * 200, 2000),
+        });
       },
       inject: [ConfigService],
     },
