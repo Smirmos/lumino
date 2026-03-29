@@ -8,6 +8,7 @@ import { SecurityService } from './security/security.service';
 import { RateLimiterService } from './security/rate-limiter.service';
 import { InstagramService } from './instagram/instagram.service';
 import { WhatsappService } from './whatsapp/whatsapp.service';
+import { ChatbotRequestLog, ChatbotSecurityLog } from '../common/types/log.types';
 
 export interface HandleMessageInput {
   channel: 'instagram' | 'whatsapp';
@@ -44,16 +45,26 @@ export class ChatbotService {
     // Step 1: Hash userId
     const hashedUserId = createHash('sha256').update(input.userId).digest('hex');
 
+    const start = Date.now();
+
     this.logger.log({
-      event: 'message_start',
+      event: 'chatbot_request_start',
       clientId: input.clientId,
       channel: input.channel,
       userId: hashedUserId,
-      textLength: input.text.length,
+      messageLength: input.text.length,
     });
 
     // Step 2: Check blocklist
     if (await this.securityService.checkBlocklist(hashedUserId, input.clientId)) {
+      const secLog: ChatbotSecurityLog = {
+        event: 'user_blocked',
+        clientId: input.clientId,
+        userId: hashedUserId,
+        channel: input.channel,
+        reason: 'blocklist',
+      };
+      this.logger.warn(secLog);
       return { reply: '', escalated: false, status: 'blocked', inputTokens: 0, outputTokens: 0 };
     }
 
@@ -65,6 +76,14 @@ export class ChatbotService {
     // Step 4: Check injection
     if (this.securityService.scanInjection(input.text)) {
       void this.securityService.recordInjectionAttempt(hashedUserId, input.clientId);
+      const secLog: ChatbotSecurityLog = {
+        event: 'injection_detected',
+        clientId: input.clientId,
+        userId: hashedUserId,
+        channel: input.channel,
+        reason: 'prompt_injection_pattern',
+      };
+      this.logger.warn(secLog);
       return {
         reply: 'I can only help with business questions.',
         escalated: false,
@@ -76,6 +95,14 @@ export class ChatbotService {
 
     // Step 5: Check rate limit
     if (await this.rateLimiterService.isRateLimited(hashedUserId, input.clientId)) {
+      const secLog: ChatbotSecurityLog = {
+        event: 'rate_limited',
+        clientId: input.clientId,
+        userId: hashedUserId,
+        channel: input.channel,
+        reason: 'user_rate_limit_exceeded',
+      };
+      this.logger.warn(secLog);
       return { reply: '', escalated: false, status: 'rate_limited', inputTokens: 0, outputTokens: 0 };
     }
 
@@ -111,7 +138,13 @@ export class ChatbotService {
           systemPrompt,
           messages: [...history, { role: 'user', content: input.text }],
         });
-      } catch {
+      } catch (err: any) {
+        this.logger.error({
+          event: 'claude_error',
+          clientId: input.clientId,
+          error: process.env.NODE_ENV === 'production' ? err.message : err.stack,
+          latencyMs: Date.now() - start,
+        });
         const fallbackReply = this.claudeService.generateFallbackReply('en');
         return {
           reply: fallbackReply,
@@ -172,14 +205,20 @@ export class ChatbotService {
       void this.rateLimiterService.incrementCounters(hashedUserId, input.clientId);
       void this.rateLimiterService.incrementClientCounter(input.clientId);
 
-      this.logger.log({
-        event: 'message_complete',
-        status: 'success',
-        escalated: shouldEscalate,
+      const requestLog: ChatbotRequestLog = {
+        event: 'chatbot_request',
+        clientId: input.clientId,
+        channel: input.channel,
+        userId: hashedUserId,
+        messageLength: input.text.length,
+        model: 'claude-haiku-4-5',
         inputTokens: result.inputTokens,
         outputTokens: result.outputTokens,
-        latencyMs: result.latencyMs,
-      });
+        latencyMs: Date.now() - start,
+        status: 'success',
+        escalated: shouldEscalate,
+      };
+      this.logger.log(requestLog);
 
       return {
         reply: cleanReply,

@@ -37,7 +37,7 @@ export class ClaudeService {
         const inputTokens = response.usage.input_tokens;
         const outputTokens = response.usage.output_tokens;
 
-        this.logger.log({ model, inputTokens, outputTokens, latencyMs });
+        this.logger.log({ event: 'claude_api_success', model, inputTokens, outputTokens, latencyMs });
 
         return { text, inputTokens, outputTokens, latencyMs };
       } catch (err: any) {
@@ -47,17 +47,17 @@ export class ClaudeService {
         const isOverloaded = err?.status === 529;
 
         if (!isRateLimit && !isOverloaded) {
-          this.logger.error({ error: err.message });
+          this.logger.error({ event: 'claude_api_failure', error: err.message, attempt: attempt + 1 });
           throw err;
         }
 
         const waitMs = Math.pow(2, attempt) * 1000;
-        this.logger.warn({ attempt: attempt + 1, waitMs });
+        this.logger.warn({ event: 'claude_rate_limit_retry', attempt: attempt + 1, waitMs });
         await new Promise((resolve) => setTimeout(resolve, waitMs));
       }
     }
 
-    this.logger.error({ error: lastError?.message });
+    this.logger.error({ event: 'claude_api_failure', error: lastError?.message, attempt: 3 });
     throw lastError;
   }
 
