@@ -19,7 +19,9 @@
     "docker:logs": "docker compose logs -f app",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "ts-node src/db/migrate.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "seed:client": "ts-node scripts/seed-first-client.ts",
+    "check:e2e": "ts-node scripts/e2e-checklist.ts"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
+import { ContextService } from '../../common/context.service';
+import { ChatbotService } from '../chatbot.service';
 
 export interface WhatsappIncomingMessage {
   channel: 'whatsapp';
@@ -13,7 +16,12 @@ export interface WhatsappIncomingMessage {
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly contextService: ContextService,
+    @Inject(forwardRef(() => ChatbotService))
+    private readonly chatbotService: ChatbotService,
+  ) {}
 
   async handleIncoming(message: WhatsappIncomingMessage): Promise<void> {
     this.logger.log({
@@ -21,7 +29,24 @@ export class WhatsappService {
       phoneNumberId: message.phoneNumberId,
       messageId: message.messageId,
     });
-    // Will be wired to ChatbotService in LUM-17
+
+    // Resolve phoneNumberId → clientId from Redis cache
+    const clientId = await this.contextService.getClientId(message.phoneNumberId);
+    if (!clientId) {
+      this.logger.warn({
+        event: 'whatsapp_client_not_found',
+        phoneNumberId: message.phoneNumberId,
+      });
+      return;
+    }
+
+    await this.chatbotService.handleMessage({
+      channel: 'whatsapp',
+      clientId,
+      userId: message.customerPhone,
+      text: message.text,
+      messageId: message.messageId,
+    });
   }
 
   async sendReply(
@@ -30,24 +55,32 @@ export class WhatsappService {
     phoneNumberId: string,
   ): Promise<void> {
     const apiKey = this.configService.get<string>('DIALOG360_API_KEY');
-    const url = 'https://waba.360dialog.io/v1/messages';
 
     try {
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'D360-API-KEY': apiKey ?? '',
-        },
-        body: JSON.stringify({
+      await axios.post(
+        'https://waba.360dialog.io/v1/messages',
+        {
           messaging_product: 'whatsapp',
+          recipient_type: 'individual',
           to: customerPhone,
           type: 'text',
-          text: { body: text },
-        }),
-      });
+          text: { body: text, preview_url: false },
+        },
+        {
+          headers: {
+            'D360-API-KEY': apiKey ?? '',
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        },
+      );
     } catch (err: any) {
-      this.logger.error('Failed to send WhatsApp reply', err.message);
+      this.logger.error({
+        event: 'whatsapp_send_failed',
+        error: err.message,
+        status: err.response?.status,
+      });
+      throw err;
     }
   }
 
