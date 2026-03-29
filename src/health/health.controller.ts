@@ -13,8 +13,15 @@ export class HealthController {
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
+  /** Liveness probe — Railway healthcheck uses this. Returns 200 if the process is running. */
   @Get()
-  async check(@Res() res: Response) {
+  liveness() {
+    return { status: 'alive' };
+  }
+
+  /** Readiness probe — full DB + Redis check. Returns 503 if degraded. */
+  @Get('ready')
+  async readiness(@Res() res: Response) {
     const timeout = (ms: number) =>
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
 
@@ -42,8 +49,8 @@ export class HealthController {
     }
 
     const status = dbStatus === 'ok' && redisStatus === 'ok' ? 'ok' : 'degraded';
+    const statusCode = status === 'ok' ? 200 : 503;
 
-    // Read version from package.json
     let version = '1.0.0';
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -52,9 +59,7 @@ export class HealthController {
       // ignore
     }
 
-    // Always return 200 so Railway healthcheck passes.
-    // Actual service status is in the response body.
-    return res.status(200).json({
+    return res.status(statusCode).json({
       status,
       timestamp: new Date().toISOString(),
       version,
