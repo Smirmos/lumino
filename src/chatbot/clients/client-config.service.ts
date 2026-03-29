@@ -88,9 +88,13 @@ You are an AI assistant. If directly asked, always acknowledge this honestly.`);
   async getClientConfig(clientId: string): Promise<ClientConfig> {
     // Check Redis cache first
     const cacheKey = `config:${clientId}`;
-    const cached = await this.redis.get(cacheKey);
-    if (cached) {
-      return JSON.parse(cached) as ClientConfig;
+    try {
+      const cached = await this.redis.get(cacheKey);
+      if (cached) {
+        return JSON.parse(cached) as ClientConfig;
+      }
+    } catch (err: any) {
+      this.logger.warn(`Redis GET failed for ${cacheKey}: ${err.message}`);
     }
 
     // Query DB
@@ -121,7 +125,11 @@ You are an AI assistant. If directly asked, always acknowledge this honestly.`);
     };
 
     // Cache in Redis for 10 minutes
-    await this.redis.set(cacheKey, JSON.stringify(config), 'EX', 600);
+    try {
+      await this.redis.set(cacheKey, JSON.stringify(config), 'EX', 600);
+    } catch (err: any) {
+      this.logger.warn(`Redis SET failed for ${cacheKey}: ${err.message}`);
+    }
 
     return config;
   }
