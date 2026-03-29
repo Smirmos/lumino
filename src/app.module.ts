@@ -8,17 +8,12 @@ import { DbModule } from './db/db.module';
 import { RedisModule } from './common/redis.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 
-const isProduction = process.env.NODE_ENV === 'production';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     LoggerModule.forRoot({
       pinoHttp: {
-        level: isProduction ? 'info' : 'debug',
-        transport: isProduction
-          ? undefined
-          : { target: 'pino-pretty', options: { colorize: true, singleLine: true } },
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
         redact: {
           paths: [
             'req.headers.authorization',
