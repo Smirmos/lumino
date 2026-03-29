@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'crypto';
+import * as Sentry from '@sentry/nestjs';
 import { ClaudeService } from '../common/claude.service';
 import { ContextService } from '../common/context.service';
 import { UsageService } from '../common/usage.service';
@@ -111,6 +112,11 @@ export class ChatbotService {
     if (!client.isActive) {
       return { reply: '', escalated: false, status: 'blocked', inputTokens: 0, outputTokens: 0 };
     }
+
+    // Set Sentry context for this request
+    Sentry.setTag('clientId', input.clientId);
+    Sentry.setTag('channel', input.channel);
+    Sentry.setUser({ id: hashedUserId });
 
     // Step 7: Acquire Redis lock
     const locked = await this.contextService.acquireLock(input.channel, hashedUserId, input.clientId);

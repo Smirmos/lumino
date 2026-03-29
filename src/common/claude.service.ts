@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as Sentry from '@sentry/nestjs';
 import Anthropic from '@anthropic-ai/sdk';
 import { GenerateReplyInput, GenerateReplyOutput } from './types/claude.types';
 
@@ -15,50 +16,63 @@ export class ClaudeService {
   }
 
   async generateReply(input: GenerateReplyInput): Promise<GenerateReplyOutput> {
-    const model = 'claude-haiku-4-5';
-    const maxTokens = 300;
-    let lastError: Error | null = null;
+    return Sentry.startSpan(
+      { name: 'claude.generateReply', op: 'ai.completion' },
+      async (span) => {
+        const model = 'claude-haiku-4-5';
+        const maxTokens = 300;
+        let lastError: Error | null = null;
 
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const start = Date.now();
-        const response = await this.client.messages.create({
-          model,
-          max_tokens: maxTokens,
-          system: input.systemPrompt,
-          messages: input.messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        });
+        span.setAttribute('ai.model', model);
 
-        const latencyMs = Date.now() - start;
-        const text = response.content[0].type === 'text' ? response.content[0].text : '';
-        const inputTokens = response.usage.input_tokens;
-        const outputTokens = response.usage.output_tokens;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const start = Date.now();
+            const response = await this.client.messages.create({
+              model,
+              max_tokens: maxTokens,
+              system: input.systemPrompt,
+              messages: input.messages.map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
+            });
 
-        this.logger.log({ event: 'claude_api_success', model, inputTokens, outputTokens, latencyMs });
+            const latencyMs = Date.now() - start;
+            const text = response.content[0].type === 'text' ? response.content[0].text : '';
+            const inputTokens = response.usage.input_tokens;
+            const outputTokens = response.usage.output_tokens;
 
-        return { text, inputTokens, outputTokens, latencyMs };
-      } catch (err: any) {
-        lastError = err;
+            span.setAttribute('ai.input_tokens', inputTokens);
+            span.setAttribute('ai.output_tokens', outputTokens);
+            span.setAttribute('ai.latency_ms', latencyMs);
 
-        const isRateLimit = err?.status === 429;
-        const isOverloaded = err?.status === 529;
+            this.logger.log({ event: 'claude_api_success', model, inputTokens, outputTokens, latencyMs });
 
-        if (!isRateLimit && !isOverloaded) {
-          this.logger.error({ event: 'claude_api_failure', error: err.message, attempt: attempt + 1 });
-          throw err;
+            return { text, inputTokens, outputTokens, latencyMs };
+          } catch (err: any) {
+            lastError = err;
+
+            const isRateLimit = err?.status === 429;
+            const isOverloaded = err?.status === 529;
+
+            if (!isRateLimit && !isOverloaded) {
+              span.setStatus({ code: 2, message: err.message });
+              this.logger.error({ event: 'claude_api_failure', error: err.message, attempt: attempt + 1 });
+              throw err;
+            }
+
+            const waitMs = Math.pow(2, attempt) * 1000;
+            this.logger.warn({ event: 'claude_rate_limit_retry', attempt: attempt + 1, waitMs });
+            await new Promise((resolve) => setTimeout(resolve, waitMs));
+          }
         }
 
-        const waitMs = Math.pow(2, attempt) * 1000;
-        this.logger.warn({ event: 'claude_rate_limit_retry', attempt: attempt + 1, waitMs });
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
-      }
-    }
-
-    this.logger.error({ event: 'claude_api_failure', error: lastError?.message, attempt: 3 });
-    throw lastError;
+        span.setStatus({ code: 2, message: lastError?.message });
+        this.logger.error({ event: 'claude_api_failure', error: lastError?.message, attempt: 3 });
+        throw lastError;
+      },
+    );
   }
 
   generateFallbackReply(language: 'he' | 'ru' | 'en'): string {

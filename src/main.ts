@@ -1,9 +1,11 @@
+import './instrument';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import * as bodyParser from 'body-parser';
 import { AppModule } from './app.module';
+import { SentryExceptionFilter } from './common/filters/sentry-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -18,6 +20,7 @@ async function bootstrap() {
 
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  app.useGlobalFilters(new SentryExceptionFilter());
   app.enableShutdownHooks();
 
   const port = process.env.PORT ?? 3000;
