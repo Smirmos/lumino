@@ -229,9 +229,9 @@ export default function DashboardPage() {
               You have {stats.unresolved} unresolved escalation{stats.unresolved > 1 ? 's' : ''}
             </span>
           </div>
-          <button className="text-orange-700 hover:text-orange-800 font-medium text-sm underline">
+          <a href="/dashboard/escalations" className="text-orange-700 hover:text-orange-800 font-medium text-sm underline">
             View Escalations
-          </button>
+          </a>
         </div>
       )}
 
