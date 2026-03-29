@@ -3,6 +3,7 @@ import { Response } from 'express';
 import Redis from 'ioredis';
 import { Db } from '../db';
 import { sql } from 'drizzle-orm';
+import { AlertService } from '../common/alert.service';
 
 @Controller('health')
 export class HealthController {
@@ -11,6 +12,7 @@ export class HealthController {
   constructor(
     @Inject('DB') private readonly db: Db,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
+    private readonly alertService: AlertService,
   ) {}
 
   /** Liveness probe — Railway healthcheck uses this. Returns 200 if the process is running. */
@@ -36,6 +38,7 @@ export class HealthController {
       dbStatus = 'ok';
     } catch (err: any) {
       this.logger.warn('Health check: DB failed', err.message);
+      void this.alertService.alertInfraFailure('database', err.message);
     }
 
     try {
@@ -46,6 +49,7 @@ export class HealthController {
       redisStatus = 'ok';
     } catch (err: any) {
       this.logger.warn('Health check: Redis failed', err.message);
+      void this.alertService.alertInfraFailure('redis', err.message);
     }
 
     const status = dbStatus === 'ok' && redisStatus === 'ok' ? 'ok' : 'degraded';
