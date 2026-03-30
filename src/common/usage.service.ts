@@ -18,21 +18,38 @@ export class UsageService {
 
   async upsertConversation(clientId: string, channel: string, customerIdentifier: string): Promise<void> {
     try {
-      await this.db
-        .insert(conversations)
-        .values({
+      // Find existing active conversation
+      const existing = await this.db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(
+          and(
+            eq(conversations.clientId, clientId),
+            eq(conversations.channel, channel),
+            eq(conversations.customerIdentifier, customerIdentifier),
+            eq(conversations.status, 'active'),
+          ),
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        // Update existing conversation
+        await this.db
+          .update(conversations)
+          .set({
+            lastMessageAt: sql`now()`,
+            messageCount: sql`${conversations.messageCount} + 1`,
+          })
+          .where(eq(conversations.id, existing[0].id));
+      } else {
+        // Create new conversation
+        await this.db.insert(conversations).values({
           clientId,
           channel,
           customerIdentifier,
           messageCount: 1,
-        })
-        .onConflictDoUpdate({
-          target: [conversations.clientId, conversations.channel, conversations.customerIdentifier],
-          set: {
-            lastMessageAt: sql`now()`,
-            messageCount: sql`${conversations.messageCount} + 1`,
-          },
         });
+      }
     } catch (err: any) {
       this.logger.error('Failed to upsert conversation', err.message);
     }
@@ -95,27 +112,44 @@ export class UsageService {
   async record(input: RecordUsageInput): Promise<void> {
     try {
       const month = new Date().toISOString().slice(0, 7); // YYYY-MM
-      const channelField = input.channel === 'instagram' ? 'channelInstagram' : 'channelWhatsapp';
 
-      await this.db
-        .insert(monthlyUsageRollup)
-        .values({
+      // Find existing rollup row
+      const existing = await this.db
+        .select({ id: monthlyUsageRollup.id })
+        .from(monthlyUsageRollup)
+        .where(
+          and(
+            eq(monthlyUsageRollup.clientId, input.clientId),
+            eq(monthlyUsageRollup.month, month),
+          ),
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        const channelIncrement = input.channel === 'instagram'
+          ? { channelInstagram: sql`${monthlyUsageRollup.channelInstagram} + 1` }
+          : { channelWhatsapp: sql`${monthlyUsageRollup.channelWhatsapp} + 1` };
+
+        await this.db
+          .update(monthlyUsageRollup)
+          .set({
+            totalMessages: sql`${monthlyUsageRollup.totalMessages} + 1`,
+            totalInputTokens: sql`${monthlyUsageRollup.totalInputTokens} + ${input.inputTokens}`,
+            totalOutputTokens: sql`${monthlyUsageRollup.totalOutputTokens} + ${input.outputTokens}`,
+            ...channelIncrement,
+          })
+          .where(eq(monthlyUsageRollup.id, existing[0].id));
+      } else {
+        await this.db.insert(monthlyUsageRollup).values({
           clientId: input.clientId,
           month,
           totalMessages: 1,
           totalInputTokens: input.inputTokens,
           totalOutputTokens: input.outputTokens,
-          [channelField]: 1,
-        })
-        .onConflictDoUpdate({
-          target: [monthlyUsageRollup.clientId, monthlyUsageRollup.month],
-          set: {
-            totalMessages: sql`${monthlyUsageRollup.totalMessages} + 1`,
-            totalInputTokens: sql`${monthlyUsageRollup.totalInputTokens} + ${input.inputTokens}`,
-            totalOutputTokens: sql`${monthlyUsageRollup.totalOutputTokens} + ${input.outputTokens}`,
-            [channelField]: sql`${monthlyUsageRollup[channelField]} + 1`,
-          },
+          channelInstagram: input.channel === 'instagram' ? 1 : 0,
+          channelWhatsapp: input.channel === 'whatsapp' ? 1 : 0,
         });
+      }
     } catch (err: any) {
       this.logger.error('Failed to record usage', err.message);
     }
