@@ -22,6 +22,29 @@ export const clientConfigs = pgTable('client_configs', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
+export const users = pgTable('users', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'set null' }),
+  isAdmin: boolean('is_admin').default(false),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  lastLoginAt: timestamp('last_login_at'),
+}, (t) => ({
+  emailIdx: index('users_email_idx').on(t.email),
+}));
+
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  token: text('token').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+}, (t) => ({
+  tokenIdx: index('reset_token_idx').on(t.token),
+}));
+
 export const conversations = pgTable('conversations', {
   id: uuid('id').defaultRandom().primaryKey(),
   clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'cascade' }).notNull(),
@@ -50,29 +73,6 @@ export const messages = pgTable('messages', {
   outputTokens: integer('output_tokens'),
 }, (t) => ({
   convIdx: index('msg_conv_idx').on(t.conversationId),
-}));
-
-export const users = pgTable('users', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'set null' }),
-  isAdmin: boolean('is_admin').default(false),
-  isActive: boolean('is_active').default(true),
-  createdAt: timestamp('created_at').defaultNow(),
-  lastLoginAt: timestamp('last_login_at'),
-}, (t) => ({
-  emailIdx: index('users_email_idx').on(t.email),
-}));
-
-export const passwordResetTokens = pgTable('password_reset_tokens', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  token: text('token').notNull().unique(),
-  expiresAt: timestamp('expires_at').notNull(),
-  usedAt: timestamp('used_at'),
-}, (t) => ({
-  tokenIdx: index('reset_token_idx').on(t.token),
 }));
 
 export const monthlyUsageRollup = pgTable('monthly_usage_rollup', {

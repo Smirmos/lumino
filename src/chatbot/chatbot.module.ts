@@ -24,6 +24,6 @@ import { RateLimiterService } from './security/rate-limiter.service';
     SecurityService,
     RateLimiterService,
   ],
-  exports: [ChatbotService],
+  exports: [ChatbotService, ClientConfigService],
 })
 export class ChatbotModule {}

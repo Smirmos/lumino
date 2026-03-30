@@ -11,6 +11,7 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { AlertService } from './common/alert.service';
 import { AlertSchedulerService } from './common/alert-scheduler.service';
 import { UsageRollupService } from './common/usage-rollup.service';
+import { InternalCacheController } from './common/internal-cache.controller';
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import { UsageRollupService } from './common/usage-rollup.service';
     RedisModule,
     ChatbotModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, InternalCacheController],
   providers: [AlertService, AlertSchedulerService, UsageRollupService],
   exports: [AlertService],
 })
