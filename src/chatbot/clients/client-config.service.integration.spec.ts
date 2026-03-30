@@ -196,8 +196,8 @@ describe('ClientConfigService — integration tests', () => {
     it('auto-detect language generates correct instruction', async () => {
       const client = await service.getClientConfig(testClientId);
       const prompt = service.buildSystemPrompt(client);
-      expect(prompt).toContain('Detect the language');
-      expect(prompt).toContain('Default to Hebrew');
+      expect(prompt).toContain('MUST reply in the SAME language');
+      expect(prompt).toContain('default to Hebrew');
     });
 
     it('[ESCALATE] marker instruction always present', async () => {

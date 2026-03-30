@@ -35,8 +35,11 @@ Business Hours: ${client.businessHours}`;
     // LANGUAGE
     if (client.languages.includes('auto')) {
       sections.push(`## LANGUAGE
-Detect the language of each customer message and reply in the same language.
-Supported languages: Hebrew, Russian, English. Default to Hebrew if uncertain.
+You MUST reply in the SAME language the customer used in their message.
+If the customer writes in English, reply in English.
+If the customer writes in Hebrew, reply in Hebrew.
+If the customer writes in Russian, reply in Russian.
+Only default to Hebrew if the message language is truly undetectable.
 Never mix languages within a single reply.`);
     } else {
       sections.push(`## LANGUAGE

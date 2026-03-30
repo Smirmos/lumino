@@ -100,9 +100,9 @@ describe('ClientConfigService', () => {
   });
 
   describe('LANGUAGE section', () => {
-    it('[fixture1 — auto] contains "Detect the language"', () => {
+    it('[fixture1 — auto] contains "SAME language" instruction', () => {
       const prompt = service.buildSystemPrompt(hebrewClient);
-      expect(prompt).toContain('Detect the language');
+      expect(prompt).toContain('MUST reply in the SAME language');
     });
     it('[fixture1 — auto] mentions Hebrew, Russian, English', () => {
       const prompt = service.buildSystemPrompt(hebrewClient);
@@ -110,9 +110,9 @@ describe('ClientConfigService', () => {
       expect(prompt).toContain('Russian');
       expect(prompt).toContain('English');
     });
-    it('[fixture1 — auto] contains "Default to Hebrew"', () => {
+    it('[fixture1 — auto] contains "default to Hebrew"', () => {
       const prompt = service.buildSystemPrompt(hebrewClient);
-      expect(prompt).toContain('Default to Hebrew');
+      expect(prompt).toContain('default to Hebrew');
     });
     it('[fixture2 — fixed ru] contains "Always reply in"', () => {
       const prompt = service.buildSystemPrompt(russianClient);
