@@ -46,6 +46,7 @@ export class WhatsappService {
       userId: message.customerPhone,
       text: message.text,
       messageId: message.messageId,
+      phoneNumberId: message.phoneNumberId,
     });
   }
 

@@ -17,6 +17,7 @@ export interface HandleMessageInput {
   userId: string;
   text: string;
   messageId?: string;
+  phoneNumberId?: string;
 }
 
 export interface HandleMessageOutput {
@@ -196,7 +197,7 @@ export class ChatbotService {
       if (input.channel === 'instagram') {
         await this.instagramService.sendReply(input.userId, cleanReply);
       } else if (input.channel === 'whatsapp') {
-        await this.whatsappService.sendReply(input.userId, cleanReply, '');
+        await this.whatsappService.sendReply(input.userId, cleanReply, input.phoneNumberId ?? '');
       }
 
       // Step 18: Record usage (fire and forget)
