@@ -10,6 +10,7 @@ import { RedisModule } from './common/redis.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { AlertService } from './common/alert.service';
 import { AlertSchedulerService } from './common/alert-scheduler.service';
+import { UsageRollupService } from './common/usage-rollup.service';
 
 @Module({
   imports: [
@@ -47,7 +48,7 @@ import { AlertSchedulerService } from './common/alert-scheduler.service';
     ChatbotModule,
   ],
   controllers: [HealthController],
-  providers: [AlertService, AlertSchedulerService],
+  providers: [AlertService, AlertSchedulerService, UsageRollupService],
   exports: [AlertService],
 })
 export class AppModule implements NestModule {
