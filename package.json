@@ -21,7 +21,8 @@
     "db:migrate": "ts-node src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "seed:client": "ts-node scripts/seed-first-client.ts",
-    "check:e2e": "ts-node scripts/e2e-checklist.ts"
+    "check:e2e": "ts-node scripts/e2e-checklist.ts",
+    "go-live": "ts-node scripts/go-live-check.ts"
   },
   "repository": {
     "type": "git",
