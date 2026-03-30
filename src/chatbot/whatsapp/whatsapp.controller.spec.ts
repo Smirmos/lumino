@@ -25,7 +25,7 @@ describe('WhatsappController', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'DIALOG360_WEBHOOK_SECRET') return testSecret;
+              if (key === 'META_APP_SECRET') return testSecret;
               return undefined;
             }),
           },
@@ -50,7 +50,7 @@ describe('WhatsappController', () => {
   });
 
   function signPayload(body: string): string {
-    return createHmac('sha256', testSecret).update(body).digest('hex');
+    return 'sha256=' + createHmac('sha256', testSecret).update(body).digest('hex');
   }
 
   describe('POST /webhooks/whatsapp', () => {
@@ -73,7 +73,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', sig)
+        .set('x-hub-signature-256', sig)
         .set('content-type', 'application/json')
         .send(body)
         .expect(200);
@@ -98,7 +98,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', sig)
+        .set('x-hub-signature-256', sig)
         .set('content-type', 'application/json')
         .send(body)
         .expect(200);
@@ -133,7 +133,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', sig)
+        .set('x-hub-signature-256', sig)
         .set('content-type', 'application/json')
         .send(body)
         .expect(200);
@@ -161,7 +161,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', sig)
+        .set('x-hub-signature-256', sig)
         .set('content-type', 'application/json')
         .send(body)
         .expect(200);
@@ -189,7 +189,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', sig)
+        .set('x-hub-signature-256', sig)
         .set('content-type', 'application/json')
         .send(body)
         .expect(200);
@@ -198,7 +198,7 @@ describe('WhatsappController', () => {
       expect(whatsappService.sendFallback).toHaveBeenCalled();
     });
 
-    it('does NOT call handleIncoming when D360-Signature is invalid', async () => {
+    it('does NOT call handleIncoming when X-Hub-Signature-256 is invalid', async () => {
       const payload = {
         object: 'whatsapp_business_account',
         entry: [{
@@ -215,7 +215,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', 'invalid_signature')
+        .set('x-hub-signature-256', 'sha256=invalid_signature')
         .send(payload)
         .expect(200);
 
@@ -242,7 +242,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', sig)
+        .set('x-hub-signature-256', sig)
         .set('content-type', 'application/json')
         .send(body)
         .expect(200);
@@ -275,7 +275,7 @@ describe('WhatsappController', () => {
 
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', sig)
+        .set('x-hub-signature-256', sig)
         .set('content-type', 'application/json')
         .send(body)
         .expect(200);
@@ -287,7 +287,7 @@ describe('WhatsappController', () => {
     it('returns 200 for invalid signature', async () => {
       await request(app.getHttpServer())
         .post('/webhooks/whatsapp')
-        .set('d360-signature', 'bad')
+        .set('x-hub-signature-256', 'sha256=bad')
         .send({ object: 'whatsapp_business_account', entry: [] })
         .expect(200);
     });

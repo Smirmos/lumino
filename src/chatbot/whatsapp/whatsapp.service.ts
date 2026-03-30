@@ -54,11 +54,11 @@ export class WhatsappService {
     text: string,
     phoneNumberId: string,
   ): Promise<void> {
-    const apiKey = this.configService.get<string>('DIALOG360_API_KEY');
+    const accessToken = this.configService.get<string>('META_ACCESS_TOKEN');
 
     try {
       await axios.post(
-        'https://waba.360dialog.io/v1/messages',
+        `https://graph.facebook.com/v22.0/${phoneNumberId}/messages`,
         {
           messaging_product: 'whatsapp',
           recipient_type: 'individual',
@@ -68,7 +68,7 @@ export class WhatsappService {
         },
         {
           headers: {
-            'D360-API-KEY': apiKey ?? '',
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
           timeout: 10000,
@@ -79,6 +79,7 @@ export class WhatsappService {
         event: 'whatsapp_send_failed',
         error: err.message,
         status: err.response?.status,
+        detail: err.response?.data,
       });
       throw err;
     }
