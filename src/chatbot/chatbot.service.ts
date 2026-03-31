@@ -126,11 +126,11 @@ export class ChatbotService {
     }
 
     try {
-      // Step 8: Upsert conversation (fire and forget)
-      void this.usageService.upsertConversation(input.clientId, input.channel, hashedUserId);
+      // Step 8: Upsert conversation (fire and forget) — store real userId for dashboard visibility
+      void this.usageService.upsertConversation(input.clientId, input.channel, input.userId);
 
       // Step 9: Persist user message (fire and forget)
-      void this.usageService.persistMessage(input.clientId, input.channel, hashedUserId, 'user', input.text);
+      void this.usageService.persistMessage(input.clientId, input.channel, input.userId, 'user', input.text);
 
       // Step 10: Load context
       const history = await this.contextService.getContext(input.channel, hashedUserId, input.clientId);
@@ -166,7 +166,7 @@ export class ChatbotService {
       void this.usageService.persistMessage(
         input.clientId,
         input.channel,
-        hashedUserId,
+        input.userId,
         'assistant',
         result.text,
         result.inputTokens,
@@ -190,7 +190,7 @@ export class ChatbotService {
       const cleanReply = result.text.replace('[ESCALATE]', '').trim();
 
       if (shouldEscalate) {
-        void this.usageService.markEscalated(input.clientId, input.channel, hashedUserId);
+        void this.usageService.markEscalated(input.clientId, input.channel, input.userId);
       }
 
       // Step 16: Send reply via channel API
