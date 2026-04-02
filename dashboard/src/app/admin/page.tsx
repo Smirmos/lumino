@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
-import { Shield, Users, MessageSquare, DollarSign, X } from 'lucide-react';
+import Link from 'next/link';
+import { Shield, Users, MessageSquare, DollarSign, X, LayoutDashboard } from 'lucide-react';
 
 interface ClientRow {
   userId: string;
@@ -61,7 +62,7 @@ function ResetPasswordModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4 sm:mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Reset Password</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -121,9 +122,18 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-8">
-        <Shield className="w-6 h-6 text-brand" />
-        <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <Shield className="w-6 h-6 text-brand" />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Admin Panel</h1>
+        </div>
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 md:hidden"
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          Dashboard
+        </Link>
       </div>
 
       {/* System Status Cards */}
@@ -174,7 +184,7 @@ export default function AdminPage() {
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900">Client Accounts</h2>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500 text-left">
               <tr>
@@ -247,6 +257,54 @@ export default function AdminPage() {
             </tbody>
           </table>
         </div>
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {isLoading ? (
+            <div className="p-6 text-center text-gray-400">Loading...</div>
+          ) : nonAdminClients.length === 0 ? (
+            <div className="p-6 text-center text-gray-400">No client accounts yet</div>
+          ) : (
+            nonAdminClients.map(client => (
+              <div key={client.userId} className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-xs text-gray-600">{client.email}</span>
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+                    client.isActive ? 'text-green-600' : 'text-red-500'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${
+                      client.isActive ? 'bg-green-500' : 'bg-red-400'
+                    }`} />
+                    {client.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-gray-900 mb-1">{client.businessName ?? 'N/A'}</p>
+                <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
+                  <span>WA: {client.waConnected ? 'Connected' : 'No'}</span>
+                  <span>Created: {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : '-'}</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => toggleActive(client)}
+                    disabled={togglingId === client.userId}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium ${
+                      client.isActive
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'bg-green-50 text-green-600 hover:bg-green-100'
+                    } disabled:opacity-50`}
+                  >
+                    {client.isActive ? 'Disable' : 'Enable'}
+                  </button>
+                  <button
+                    onClick={() => setResetTarget(client)}
+                    className="flex-1 py-2 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  >
+                    Reset Password
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Usage Summary Table */}
@@ -254,7 +312,7 @@ export default function AdminPage() {
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900">Usage This Month</h2>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500 text-left">
               <tr>
@@ -298,6 +356,37 @@ export default function AdminPage() {
               )}
             </tbody>
           </table>
+        </div>
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {isLoading ? (
+            <div className="p-6 text-center text-gray-400">Loading...</div>
+          ) : nonAdminClients.length === 0 ? (
+            <div className="p-6 text-center text-gray-400">No usage data</div>
+          ) : (
+            nonAdminClients.map(client => {
+              const tokens = client.monthInputTokens + client.monthOutputTokens;
+              return (
+                <div key={client.userId} className="p-4">
+                  <p className="text-sm font-medium text-gray-900 mb-2">{client.businessName ?? 'N/A'}</p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                      <p className="text-xs text-gray-400">Messages</p>
+                      <p className="text-sm font-mono font-medium text-gray-900">{client.monthMessages.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Tokens</p>
+                      <p className="text-sm font-mono font-medium text-gray-900">{tokens.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Cost</p>
+                      <p className="text-sm font-mono font-medium text-gray-900">${(tokens * 0.002 / 1000).toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
