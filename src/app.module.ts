@@ -11,6 +11,7 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { AlertService } from './common/alert.service';
 import { AlertSchedulerService } from './common/alert-scheduler.service';
 import { UsageRollupService } from './common/usage-rollup.service';
+import { SummarizationService } from './common/summarization.service';
 import { InternalCacheController } from './common/internal-cache.controller';
 
 @Module({
@@ -49,7 +50,7 @@ import { InternalCacheController } from './common/internal-cache.controller';
     ChatbotModule,
   ],
   controllers: [HealthController, InternalCacheController],
-  providers: [AlertService, AlertSchedulerService, UsageRollupService],
+  providers: [AlertService, AlertSchedulerService, UsageRollupService, SummarizationService],
   exports: [AlertService],
 })
 export class AppModule implements NestModule {

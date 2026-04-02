@@ -18,6 +18,9 @@ export const clientConfigs = pgTable('client_configs', {
   instagramPageId: text('instagram_page_id'),
   whatsappPhoneId: text('whatsapp_phone_id'),
   isActive: boolean('is_active').default(true),
+  subscriptionPlan: text('subscription_plan').default('standard'),
+  dedicatedNumber: boolean('dedicated_number').default(false),
+  dedicatedNumberFee: integer('dedicated_number_fee').default(0),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -73,6 +76,28 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   usedAt: timestamp('used_at'),
 }, (t) => ({
   tokenIdx: index('reset_token_idx').on(t.token),
+}));
+
+export const conversationSummaries = pgTable('conversation_summaries', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  conversationId: uuid('conversation_id').references(() => conversations.id, { onDelete: 'cascade' }).notNull().unique(),
+  clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'cascade' }).notNull(),
+  channel: text('channel').notNull(),
+  customerIdentifier: text('customer_identifier').notNull(),
+  startedAt: timestamp('started_at'),
+  endedAt: timestamp('ended_at'),
+  messageCount: integer('message_count'),
+  summary: text('summary'),
+  botResolved: boolean('bot_resolved'),
+  needsFollowUp: boolean('needs_follow_up'),
+  customerSentiment: text('customer_sentiment'),
+  topicTags: text('topic_tags').array(),
+  status: text('status').default('needs_follow_up'),
+  reviewedAt: timestamp('reviewed_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (t) => ({
+  clientIdx: index('cs_client_idx').on(t.clientId),
+  statusIdx: index('cs_status_idx').on(t.clientId, t.status),
 }));
 
 export const monthlyUsageRollup = pgTable('monthly_usage_rollup', {
