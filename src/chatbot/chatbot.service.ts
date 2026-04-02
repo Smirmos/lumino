@@ -9,6 +9,7 @@ import { SecurityService } from './security/security.service';
 import { RateLimiterService } from './security/rate-limiter.service';
 import { InstagramService } from './instagram/instagram.service';
 import { WhatsappService } from './whatsapp/whatsapp.service';
+import { EscalationNotifierService } from '../common/escalation-notifier.service';
 import { ChatbotRequestLog, ChatbotSecurityLog } from '../common/types/log.types';
 
 export interface HandleMessageInput {
@@ -41,6 +42,7 @@ export class ChatbotService {
     private readonly rateLimiterService: RateLimiterService,
     private readonly instagramService: InstagramService,
     private readonly whatsappService: WhatsappService,
+    private readonly escalationNotifier: EscalationNotifierService,
   ) {}
 
   async handleMessage(input: HandleMessageInput): Promise<HandleMessageOutput> {
@@ -112,6 +114,22 @@ export class ChatbotService {
     const client = await this.clientConfigService.getClientConfig(input.clientId);
     if (!client.isActive) {
       return { reply: '', escalated: false, status: 'blocked', inputTokens: 0, outputTokens: 0 };
+    }
+
+    // Step 6b: Check if conversation is escalated — if so, silently ignore
+    const convStatus = await this.usageService.getConversationStatus(
+      input.clientId,
+      input.channel,
+      input.userId,
+    );
+    if (convStatus === 'escalated') {
+      this.logger.log({
+        event: 'escalated_conversation_silenced',
+        clientId: input.clientId,
+        channel: input.channel,
+        userId: hashedUserId,
+      });
+      return { reply: '', escalated: true, status: 'blocked', inputTokens: 0, outputTokens: 0 };
     }
 
     // Set Sentry context for this request
@@ -187,10 +205,27 @@ export class ChatbotService {
       const shouldEscalate =
         result.text.includes('[ESCALATE]') ||
         this.securityService.checkEscalationKeywords(input.text, client.escalationKeywords);
-      const cleanReply = result.text.replace('[ESCALATE]', '').trim();
 
+      let cleanReply: string;
       if (shouldEscalate) {
+        // Replace Claude's reply with handoff message
+        cleanReply = "I'm connecting you with a team member who can help you further.";
+
         void this.usageService.markEscalated(input.clientId, input.channel, input.userId);
+        void this.usageService.markMessageAsEscalationTrigger(input.clientId, input.channel, input.userId);
+
+        // Determine trigger reason for email
+        const triggerReason = result.text.includes('[ESCALATE]')
+          ? 'AI-initiated escalation'
+          : 'Keyword match in customer message';
+        void this.escalationNotifier.notifyEscalation(
+          input.clientId,
+          input.channel,
+          input.userId,
+          triggerReason,
+        );
+      } else {
+        cleanReply = result.text.replace('[ESCALATE]', '').trim();
       }
 
       // Step 16: Send reply via channel API
