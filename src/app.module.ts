@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { randomUUID } from 'crypto';
 import { ChatbotModule } from './chatbot/chatbot.module';
+import { ContactModule } from './contact/contact.module';
 import { HealthController } from './health/health.controller';
 import { DbModule } from './db/db.module';
 import { RedisModule } from './common/redis.module';
@@ -48,6 +49,7 @@ import { InternalCacheController } from './common/internal-cache.controller';
     DbModule,
     RedisModule,
     ChatbotModule,
+    ContactModule,
   ],
   controllers: [HealthController, InternalCacheController],
   providers: [AlertService, AlertSchedulerService, UsageRollupService, SummarizationService],
