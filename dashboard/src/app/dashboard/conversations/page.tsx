@@ -67,6 +67,36 @@ function SkeletonRow() {
   );
 }
 
+function ConversationCard({ conv }: { conv: Conversation }) {
+  return (
+    <Link
+      href={`/dashboard/conversations/${conv.id}`}
+      className="block p-4 hover:bg-gray-50 transition-colors"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">
+            {conv.channel === 'whatsapp' ? '\uD83D\uDCF1' : '\uD83D\uDCF8'}
+          </span>
+          <span className="font-mono text-sm text-gray-600">
+            ***{conv.customerIdentifier.slice(-4)}
+          </span>
+        </div>
+        <StatusBadge status={conv.status} />
+      </div>
+      {conv.lastMessagePreview && (
+        <p className="text-sm text-gray-500 line-clamp-1 mb-1">
+          {conv.lastMessagePreview}
+        </p>
+      )}
+      <div className="flex items-center justify-between text-xs text-gray-400">
+        <span>{conv.messageCount} messages</span>
+        <span>{timeAgo(conv.lastMessageAt)}</span>
+      </div>
+    </Link>
+  );
+}
+
 export default function ConversationsPage() {
   return (
     <Suspense
@@ -153,7 +183,7 @@ function ConversationsContent() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
         <div className="flex flex-wrap items-center gap-3">
           {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -189,8 +219,8 @@ function ConversationsContent() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Table — desktop */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100">
@@ -257,6 +287,46 @@ function ConversationsContent() {
         {/* Pagination */}
         {data && data.totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">
+              Page {data.page} of {data.totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => updateParams({ page: String(page - 1) })}
+                disabled={page <= 1}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => updateParams({ page: String(page + 1) })}
+                disabled={page >= data.totalPages}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Cards — mobile */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden md:hidden">
+        {isLoading ? (
+          <div className="p-6 text-center text-gray-400 animate-pulse">Loading...</div>
+        ) : !data?.data.length ? (
+          <div className="p-6 text-center text-gray-400">No conversations found</div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {data.data.map((conv) => (
+              <ConversationCard key={conv.id} conv={conv} />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {data && data.totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
             <span className="text-sm text-gray-500">
               Page {data.page} of {data.totalPages}
             </span>
