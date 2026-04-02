@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
 } from 'lucide-react';
+import MobileTabBar from '@/components/MobileTabBar';
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -79,10 +80,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* Main content */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 pb-20 md:pb-0">
           {children}
         </main>
       </div>
+
+      <MobileTabBar />
     </div>
   );
 }
