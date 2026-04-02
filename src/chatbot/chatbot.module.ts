@@ -10,8 +10,10 @@ import { ContextService } from '../common/context.service';
 import { UsageService } from '../common/usage.service';
 import { SecurityService } from './security/security.service';
 import { RateLimiterService } from './security/rate-limiter.service';
+import { EscalationNotifierModule } from '../common/escalation-notifier.module';
 
 @Module({
+  imports: [EscalationNotifierModule],
   controllers: [InstagramController, WhatsappController],
   providers: [
     ChatbotService,
