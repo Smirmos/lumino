@@ -165,7 +165,7 @@ export default function EscalationsPage() {
               className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:border-gray-200 transition-colors"
             >
               {/* Top row */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-3">
                   <span className="text-lg">
                     {esc.channel === 'whatsapp' ? '\uD83D\uDCF1' : '\uD83D\uDCF8'}
@@ -180,14 +180,14 @@ export default function EscalationsPage() {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/dashboard/conversations/${esc.id}`}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center justify-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 flex-1 sm:flex-initial"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     View
                   </Link>
                   <button
                     onClick={() => resolve(esc.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100"
+                    className="flex items-center justify-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 flex-1 sm:flex-initial"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Resolve
