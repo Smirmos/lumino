@@ -120,16 +120,16 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {greeting()}, {stats?.businessName ?? 'there'}
           </h1>
-          <p className="text-gray-500 mt-1">Here is your bot performance overview</p>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">Here is your bot performance overview</p>
         </div>
         {stats && (
           <span
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium self-start ${
               stats.botActive
                 ? 'bg-green-50 text-green-700'
                 : 'bg-yellow-50 text-yellow-700'
@@ -247,7 +247,7 @@ export default function DashboardPage() {
             <div className="p-6 text-center text-gray-400">No conversations yet</div>
           ) : (
             recentConvos.map((conv) => (
-              <div key={conv.id} className="px-6 py-3 flex items-center justify-between">
+              <div key={conv.id} className="px-4 py-3 sm:px-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-lg">
                     {conv.channel === 'whatsapp' ? '\uD83D\uDCF1' : '\uD83D\uDCF8'}
@@ -256,9 +256,9 @@ export default function DashboardPage() {
                     ****{conv.customerIdentifier.slice(-4)}
                   </span>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4">
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       conv.status === 'active'
                         ? 'bg-green-50 text-green-700'
                         : conv.status === 'escalated'
@@ -268,7 +268,7 @@ export default function DashboardPage() {
                   >
                     {conv.status.charAt(0).toUpperCase() + conv.status.slice(1)}
                   </span>
-                  <span className="text-xs text-gray-400">{timeAgo(conv.lastMessageAt)}</span>
+                  <span className="text-xs text-gray-400 hidden sm:inline">{timeAgo(conv.lastMessageAt)}</span>
                 </div>
               </div>
             ))
