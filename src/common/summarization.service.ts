@@ -119,7 +119,9 @@ ${transcript}`,
     };
 
     try {
-      parsed = JSON.parse(text);
+      // Strip markdown code fences if Claude wraps the JSON
+      const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      parsed = JSON.parse(cleaned);
     } catch {
       this.logger.warn(`Failed to parse summary JSON for ${conv.id}: ${text}`);
       parsed = {
