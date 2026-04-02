@@ -1,0 +1,73 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createHebrewClient = createHebrewClient;
+exports.createRussianClient = createRussianClient;
+exports.createMultiLangClient = createMultiLangClient;
+const crypto_1 = require("crypto");
+function createHebrewClient(overrides) {
+    return {
+        id: (0, crypto_1.randomUUID)(),
+        businessName: 'מספרה דנה',
+        services: 'תספורת 80₪, צביעה 200₪, החלקה 350₪',
+        pricing: 'תספורת 80₪, צביעה 200₪',
+        businessHours: 'ראשון-חמישי 09:00-20:00, שישי 09:00-14:00',
+        location: 'דיזנגוף 45, תל אביב',
+        website: 'https://dana-hair.co.il',
+        toneDescription: 'ידידותי ומקצועי',
+        languages: ['auto'],
+        escalationKeywords: ['החזר', 'תלונה'],
+        escalationSla: '2 שעות',
+        fallbackMessage: null,
+        canBook: true,
+        bookingUrl: 'https://cal.com/dana',
+        instagramPageId: null,
+        whatsappPhoneId: null,
+        isActive: true,
+        ...overrides,
+    };
+}
+function createRussianClient(overrides) {
+    return {
+        id: (0, crypto_1.randomUUID)(),
+        businessName: 'Студия красоты Анна',
+        services: 'Маникюр 120₪, Педикюр 150₪',
+        pricing: null,
+        businessHours: 'Вс-Чт 10:00-20:00',
+        location: null,
+        website: null,
+        toneDescription: 'Professional and warm',
+        languages: ['ru'],
+        escalationKeywords: null,
+        escalationSla: '24 hours',
+        fallbackMessage: null,
+        canBook: false,
+        bookingUrl: null,
+        instagramPageId: null,
+        whatsappPhoneId: null,
+        isActive: true,
+        ...overrides,
+    };
+}
+function createMultiLangClient(overrides) {
+    return {
+        id: (0, crypto_1.randomUUID)(),
+        businessName: 'TLV Law Office',
+        services: 'Legal consultation, Contract review, Real estate',
+        pricing: 'Initial consultation: 500₪/hour',
+        businessHours: 'Mon-Thu 09:00-18:00',
+        location: null,
+        website: null,
+        toneDescription: 'Professional, formal, precise',
+        languages: ['he', 'ru', 'en'],
+        escalationKeywords: ['lawsuit', 'court', 'תביעה', 'суд'],
+        escalationSla: '1 business day',
+        fallbackMessage: null,
+        canBook: true,
+        bookingUrl: 'https://tlvlaw.co.il/book',
+        instagramPageId: null,
+        whatsappPhoneId: null,
+        isActive: true,
+        ...overrides,
+    };
+}
+//# sourceMappingURL=client-config.fixture.js.map

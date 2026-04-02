@@ -1,0 +1,81 @@
+<h2>Mobile Analytics Charts</h2>
+<p class="subtitle">Currently charts are 2-column on desktop. On mobile they'll stack to 1-column, but the charts themselves need adjustment too.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Full Charts (Scaled Down)</h3>
+      <p>Same Recharts line/bar/pie charts, just full-width and shorter height. All chart features preserved — tooltips, legends, axis labels. Recharts' ResponsiveContainer handles the width automatically.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="background: #f9fafb; max-width: 300px; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e7eb;">
+            <div style="font-weight: 600; font-size: 12px; color: #111; margin-bottom: 8px;">Messages per Day</div>
+            <div style="height: 140px; background: linear-gradient(to top, #F0EEFB 0%, transparent 100%); border-radius: 8px; position: relative; overflow: hidden;">
+              <svg viewBox="0 0 280 120" style="width: 100%; height: 100%;">
+                <polyline points="10,100 50,80 90,85 130,40 170,55 210,30 250,45" fill="none" stroke="#5B4FCF" stroke-width="2.5"/>
+                <circle cx="210" cy="30" r="3" fill="#5B4FCF"/>
+              </svg>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9px; color: #9CA3AF; margin-top: 4px;">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+          <div style="background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e7eb;">
+            <div style="font-weight: 600; font-size: 12px; color: #111; margin-bottom: 8px;">Language Breakdown</div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(#5B4FCF 0% 55%, #34D399 55% 80%, #F472B6 80% 100%); flex-shrink: 0;"></div>
+              <div style="font-size: 11px; color: #374151; line-height: 1.8;">
+                <div>🟣 Hebrew 55%</div>
+                <div>🟢 Russian 25%</div>
+                <div>🩷 English 20%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Simplified Mobile Charts</h3>
+      <p>Replace some charts with simpler representations — progress bars instead of pie charts, sparklines instead of full line charts. Faster to read on small screens, less clutter.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="background: #f9fafb; max-width: 300px; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e7eb;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="font-weight: 600; font-size: 12px; color: #111;">Messages per Day</div>
+              <div style="font-size: 11px; color: #5B4FCF; font-weight: 600;">↑ 12%</div>
+            </div>
+            <div style="display: flex; align-items: end; gap: 4px; height: 50px;">
+              <div style="flex: 1; background: #E0DCF7; border-radius: 3px 3px 0 0; height: 60%;"></div>
+              <div style="flex: 1; background: #E0DCF7; border-radius: 3px 3px 0 0; height: 45%;"></div>
+              <div style="flex: 1; background: #E0DCF7; border-radius: 3px 3px 0 0; height: 50%;"></div>
+              <div style="flex: 1; background: #5B4FCF; border-radius: 3px 3px 0 0; height: 90%;"></div>
+              <div style="flex: 1; background: #E0DCF7; border-radius: 3px 3px 0 0; height: 70%;"></div>
+              <div style="flex: 1; background: #E0DCF7; border-radius: 3px 3px 0 0; height: 100%;"></div>
+              <div style="flex: 1; background: #E0DCF7; border-radius: 3px 3px 0 0; height: 65%;"></div>
+            </div>
+          </div>
+          <div style="background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e7eb;">
+            <div style="font-weight: 600; font-size: 12px; color: #111; margin-bottom: 10px;">Language Breakdown</div>
+            <div style="margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #374151; margin-bottom: 3px;"><span>Hebrew</span><span>55%</span></div>
+              <div style="height: 6px; background: #F3F4F6; border-radius: 3px; overflow: hidden;"><div style="width: 55%; height: 100%; background: #5B4FCF; border-radius: 3px;"></div></div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #374151; margin-bottom: 3px;"><span>Russian</span><span>25%</span></div>
+              <div style="height: 6px; background: #F3F4F6; border-radius: 3px; overflow: hidden;"><div style="width: 25%; height: 100%; background: #34D399; border-radius: 3px;"></div></div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #374151; margin-bottom: 3px;"><span>English</span><span>20%</span></div>
+              <div style="height: 6px; background: #F3F4F6; border-radius: 3px; overflow: hidden;"><div style="width: 20%; height: 100%; background: #F472B6; border-radius: 3px;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

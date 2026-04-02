@@ -276,7 +276,7 @@ export default function SettingsPage() {
               <input {...register('businessHours')} placeholder="e.g. Sun-Thu 09:00-18:00, Fri 09:00-14:00" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
               <FieldError message={errors.businessHours?.message} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <FieldLabel label="Location" />
                 <input {...register('location')} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
@@ -403,7 +403,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Form footer */}
-        <div className="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <span className="text-xs text-gray-400">
             Last saved: {data.updatedAt ? timeAgo(data.updatedAt) : 'never'}
           </span>
@@ -412,14 +412,14 @@ export default function SettingsPage() {
               type="button"
               onClick={() => reset()}
               disabled={!isDirty}
-              className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30"
+              className="flex-1 sm:flex-initial px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30"
             >
               Reset
             </button>
             <button
               type="submit"
               disabled={!isDirty || saving}
-              className="px-6 py-2 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-600 disabled:opacity-30"
+              className="flex-1 sm:flex-initial px-6 py-2 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-600 disabled:opacity-30"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

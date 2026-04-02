@@ -1,0 +1,6 @@
+{"type":"server-started","port":65486,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:65486","screen_dir":"/Users/arkadiy.smirnov/Documents/studying/lumino/dashboard/.superpowers/brainstorm/12862-1775114236/content","state_dir":"/Users/arkadiy.smirnov/Documents/studying/lumino/dashboard/.superpowers/brainstorm/12862-1775114236/state"}
+{"type":"screen-added","file":"/Users/arkadiy.smirnov/Documents/studying/lumino/dashboard/.superpowers/brainstorm/12862-1775114236/content/mobile-nav-pattern.html"}
+{"type":"screen-added","file":"/Users/arkadiy.smirnov/Documents/studying/lumino/dashboard/.superpowers/brainstorm/12862-1775114236/content/mobile-tables.html"}
+{"type":"screen-added","file":"/Users/arkadiy.smirnov/Documents/studying/lumino/dashboard/.superpowers/brainstorm/12862-1775114236/content/mobile-charts.html"}
+{"type":"screen-added","file":"/Users/arkadiy.smirnov/Documents/studying/lumino/dashboard/.superpowers/brainstorm/12862-1775114236/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}

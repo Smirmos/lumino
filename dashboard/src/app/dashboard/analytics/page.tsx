@@ -109,7 +109,7 @@ export default function AnalyticsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -117,11 +117,11 @@ export default function AnalyticsPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics</h1>
         </div>
 
         {/* Period selector */}
-        <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className="flex bg-gray-100 rounded-lg p-1 self-start">
           {(['7d', '30d', '90d'] as const).map((p) => (
             <button
               key={p}
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
               {data.messagesPerDay.length === 0 ? (
                 <p className="text-gray-400 text-sm py-12 text-center">No data yet</p>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={data.messagesPerDay}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis
@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
               {data.languageBreakdown.length === 0 ? (
                 <p className="text-gray-400 text-sm py-12 text-center">No data yet</p>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
                       data={data.languageBreakdown}
@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
               {data.channelBreakdown.length === 0 ? (
                 <p className="text-gray-400 text-sm py-12 text-center">No data yet</p>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={data.channelBreakdown}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="channel" tick={{ fontSize: 12 }} />
@@ -248,7 +248,7 @@ export default function AnalyticsPage() {
             {/* Peak hours */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-4">Peak hours</h3>
-              <ResponsiveContainer width="100%" height={240}>
+              <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={data.peakHours}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis

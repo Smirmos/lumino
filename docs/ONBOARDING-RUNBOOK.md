@@ -47,6 +47,53 @@ Send a WhatsApp message to the test number and verify:
 - Response contains correct business info
 - Conversation appears in Railway Postgres
 
+## Complete New Client Onboarding (Production)
+
+### 1. Create account (5 minutes)
+```bash
+cd dashboard
+DATABASE_URL='postgresql://postgres:pSmWtsyuYcxyjcdILhgfRzOacrdblgqv@hopper.proxy.rlwy.net:53676/railway' \
+npx tsx scripts/create-client.ts \
+  --email client@business.com \
+  --password TempPass2026! \
+  --business-name "Business Name" \
+  --services "Service A 100, Service B 200" \
+  --hours "Sun-Thu 09:00-18:00"
+```
+Note the Client UUID from output.
+
+### 2. Connect WhatsApp (15 minutes)
+In Meta Developer Portal:
+- Add their WhatsApp number, get phone_number_id
+- Set webhook URL to: `https://lumino-production-9339.up.railway.app/webhooks/whatsapp`
+
+In Railway Redis CLI:
+```bash
+SET phone:[phone_number_id] [client-uuid]
+```
+
+### 3. Verify bot works (5 minutes)
+Send a test WhatsApp message to their number.
+Expected: Claude reply within 5 seconds.
+```bash
+./scripts/production-e2e-test.sh \
+  https://lumino-production-9339.up.railway.app \
+  https://lumino-dashboard-production.up.railway.app
+```
+
+### 4. Deliver credentials to client
+Send securely (WhatsApp or encrypted email):
+- Dashboard URL: https://lumino-dashboard-production.up.railway.app
+- Email: [their email]
+- Temporary password: [TempPass2026!]
+- Attach: CLIENT-ONBOARDING-GUIDE-HE.md (Hebrew clients) or CLIENT-ONBOARDING-GUIDE-EN.md
+
+### 5. Client is live
+Bot is active from the moment WhatsApp is connected.
+Client can log in, view conversations, and manage settings.
+
+---
+
 ## Updating Client Configuration
 
 ### Edit business info

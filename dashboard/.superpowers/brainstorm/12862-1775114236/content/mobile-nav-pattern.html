@@ -1,0 +1,100 @@
+<h2>Mobile Navigation Pattern</h2>
+<p class="subtitle">The sidebar is hidden on mobile today — users can't navigate. Which pattern should replace it?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Bottom Tab Bar</h3>
+      <p>Fixed bar at the bottom of the screen with 5 icons (Overview, Conversations, Escalations, Analytics, Settings). Always visible, one-tap access. This is the standard for mobile apps — Instagram, WhatsApp, etc.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="background: #f9fafb; position: relative; height: 280px; max-width: 320px; margin: 0 auto; border-radius: 20px; overflow: hidden; border: 2px solid #e5e7eb;">
+          <!-- Status bar -->
+          <div style="background: white; padding: 8px 16px; font-size: 11px; display: flex; justify-content: space-between; color: #666;">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+          </div>
+          <!-- Header -->
+          <div style="background: white; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; color: #5B4FCF; font-size: 14px;">LUMINO AI</span>
+            <span style="font-size: 11px; color: #666;">⎋</span>
+          </div>
+          <!-- Content area -->
+          <div style="padding: 12px; font-size: 11px; color: #999; text-align: center; margin-top: 40px;">
+            Page content here
+          </div>
+          <!-- Bottom tab bar -->
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 8px 0 12px; align-items: center;">
+            <div style="text-align: center;">
+              <div style="font-size: 18px;">📊</div>
+              <div style="font-size: 9px; color: #5B4FCF; font-weight: 600; margin-top: 2px;">Overview</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 18px;">💬</div>
+              <div style="font-size: 9px; color: #999; margin-top: 2px;">Chats</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 18px;">⚠️</div>
+              <div style="font-size: 9px; color: #999; margin-top: 2px;">Escalations</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 18px;">📈</div>
+              <div style="font-size: 9px; color: #999; margin-top: 2px;">Analytics</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 18px;">⚙️</div>
+              <div style="font-size: 9px; color: #999; margin-top: 2px;">Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Hamburger Menu (Slide-out Drawer)</h3>
+      <p>Menu icon (☰) in the header opens a slide-out panel from the left with the full navigation. Frees up screen space when closed. Common in web dashboards — Gmail, Notion mobile, etc.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="background: #f9fafb; position: relative; height: 280px; max-width: 320px; margin: 0 auto; border-radius: 20px; overflow: hidden; border: 2px solid #e5e7eb;">
+          <!-- Status bar -->
+          <div style="background: white; padding: 8px 16px; font-size: 11px; display: flex; justify-content: space-between; color: #666;">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+          </div>
+          <!-- Header with hamburger -->
+          <div style="background: white; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 18px; cursor: pointer;">☰</span>
+              <span style="font-weight: 700; color: #5B4FCF; font-size: 14px;">LUMINO AI</span>
+            </div>
+            <span style="font-size: 11px; color: #666;">⎋</span>
+          </div>
+          <!-- Drawer overlay (shown as open) -->
+          <div style="position: absolute; top: 56px; left: 0; bottom: 0; width: 70%; background: white; border-right: 1px solid #e5e7eb; padding: 16px 0; z-index: 10; box-shadow: 4px 0 12px rgba(0,0,0,0.1);">
+            <div style="padding: 10px 20px; font-size: 13px; color: #5B4FCF; font-weight: 600; background: #F0EEFB; border-left: 3px solid #5B4FCF;">📊 Overview</div>
+            <div style="padding: 10px 20px; font-size: 13px; color: #4B5563;">💬 Conversations</div>
+            <div style="padding: 10px 20px; font-size: 13px; color: #4B5563;">⚠️ Escalations</div>
+            <div style="padding: 10px 20px; font-size: 13px; color: #4B5563;">📈 Analytics</div>
+            <div style="padding: 10px 20px; font-size: 13px; color: #4B5563;">⚙️ Settings</div>
+          </div>
+          <!-- Dim overlay -->
+          <div style="position: absolute; top: 56px; left: 70%; right: 0; bottom: 0; background: rgba(0,0,0,0.3);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Bottom Tab Bar + Hamburger for Admin</h3>
+      <p>Bottom tabs for the 5 main dashboard pages (fast, always visible). Admin panel gets a hamburger menu since it's a separate section used less frequently. Best of both worlds.</p>
+      <div class="pros-cons" style="margin-top: 8px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Fast navigation for daily use</li><li>Admin stays accessible but out of the way</li><li>Clean separation of user vs admin</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Two navigation patterns to learn</li><li>Slightly more code complexity</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
