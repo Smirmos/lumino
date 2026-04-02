@@ -55,6 +55,31 @@ export class UsageService {
     }
   }
 
+  async getConversationStatus(
+    clientId: string,
+    channel: string,
+    customerIdentifier: string,
+  ): Promise<string | null> {
+    try {
+      const rows = await this.db
+        .select({ status: conversations.status })
+        .from(conversations)
+        .where(
+          and(
+            eq(conversations.clientId, clientId),
+            eq(conversations.channel, channel),
+            eq(conversations.customerIdentifier, customerIdentifier),
+            eq(conversations.status, 'escalated'),
+          ),
+        )
+        .limit(1);
+      return rows.length > 0 ? rows[0].status : null;
+    } catch (err: any) {
+      this.logger.error('Failed to get conversation status', err.message);
+      return null;
+    }
+  }
+
   async persistMessage(
     clientId: string,
     channel: string,
@@ -106,6 +131,49 @@ export class UsageService {
         );
     } catch (err: any) {
       this.logger.error('Failed to mark escalated', err.message);
+    }
+  }
+
+  async markMessageAsEscalationTrigger(
+    clientId: string,
+    channel: string,
+    customerIdentifier: string,
+  ): Promise<void> {
+    try {
+      const convRows = await this.db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(
+          and(
+            eq(conversations.clientId, clientId),
+            eq(conversations.channel, channel),
+            eq(conversations.customerIdentifier, customerIdentifier),
+          ),
+        )
+        .limit(1);
+
+      if (convRows.length === 0) return;
+
+      const msgRows = await this.db
+        .select({ id: messages.id })
+        .from(messages)
+        .where(
+          and(
+            eq(messages.conversationId, convRows[0].id),
+            eq(messages.role, 'user'),
+          ),
+        )
+        .orderBy(sql`${messages.createdAt} DESC`)
+        .limit(1);
+
+      if (msgRows.length > 0) {
+        await this.db
+          .update(messages)
+          .set({ isEscalationTrigger: true })
+          .where(eq(messages.id, msgRows[0].id));
+      }
+    } catch (err: any) {
+      this.logger.error('Failed to mark escalation trigger', err.message);
     }
   }
 
