@@ -156,10 +156,10 @@ export default function ConversationDetailPage() {
 
       {/* Escalation banner */}
       {conv.status === 'escalated' && !conv.resolvedAt && (
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 flex items-center justify-between">
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-500" />
-            <span className="text-orange-700 font-medium">
+            <AlertTriangle className="w-5 h-5 text-orange-500 shrink-0" />
+            <span className="text-orange-700 font-medium text-sm sm:text-base">
               This conversation was escalated
               {conv.escalatedAt && ` on ${formatDate(conv.escalatedAt)}`}.
               Follow up with the customer.
@@ -168,7 +168,7 @@ export default function ConversationDetailPage() {
           <button
             onClick={handleResolve}
             disabled={resolving}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-200 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-200 disabled:opacity-50 w-full sm:w-auto"
           >
             <CheckCircle className="w-4 h-4" />
             {resolving ? 'Resolving...' : 'Mark as Resolved'}
@@ -190,7 +190,7 @@ export default function ConversationDetailPage() {
                 {msg.role === 'user' ? 'Customer' : 'Bot'}
               </span>
               <div
-                className={`max-w-[70%] px-4 py-2 ${
+                className={`max-w-[85%] sm:max-w-[70%] px-4 py-2 ${
                   msg.role === 'user'
                     ? 'bg-gray-100 rounded-2xl rounded-tl-sm text-gray-900'
                     : 'bg-[#5B4FCF] rounded-2xl rounded-tr-sm text-white'
@@ -217,10 +217,10 @@ export default function ConversationDetailPage() {
       </div>
 
       {/* Action bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <Link
           href="/dashboard/conversations"
-          className="text-gray-500 hover:text-gray-700 text-sm font-medium flex items-center gap-1"
+          className="text-gray-500 hover:text-gray-700 text-sm font-medium flex items-center justify-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Conversations
@@ -229,7 +229,7 @@ export default function ConversationDetailPage() {
           <button
             onClick={handleResolve}
             disabled={resolving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-600 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-600 disabled:opacity-50"
           >
             <CheckCircle className="w-4 h-4" />
             {resolving ? 'Resolving...' : 'Mark Resolved'}
