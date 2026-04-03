@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 const logger = new Logger('EnvValidation');
 
 const REQUIRED_VARS = ['DATABASE_URL', 'REDIS_URL', 'ANTHROPIC_API_KEY', 'PORT'];
-const OPTIONAL_VARS = ['META_APP_SECRET', 'DIALOG360_WEBHOOK_SECRET', 'SENTRY_DSN', 'RESEND_API_KEY'];
+const OPTIONAL_VARS = ['META_APP_SECRET', 'DIALOG360_WEBHOOK_SECRET', 'SENTRY_DSN', 'SENDGRID_API_KEY'];
 
 export function validateEnv(): void {
   const missing: string[] = [];

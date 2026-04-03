@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import sgMail from '@sendgrid/mail';
 import { Db } from '../db';
 import { users, conversations, messages } from '../db/schema';
 import { eq, and, desc } from 'drizzle-orm';
@@ -8,7 +8,7 @@ import { eq, and, desc } from 'drizzle-orm';
 @Injectable()
 export class EscalationNotifierService {
   private readonly logger = new Logger(EscalationNotifierService.name);
-  private readonly resend: Resend | null;
+  private readonly emailEnabled: boolean;
   private readonly fromEmail: string;
   private readonly dashboardUrl: string;
 
@@ -16,11 +16,12 @@ export class EscalationNotifierService {
     @Inject('DB') private readonly db: Db,
     private readonly config: ConfigService,
   ) {
-    const apiKey = this.config.get<string>('RESEND_API_KEY');
-    this.resend = apiKey ? new Resend(apiKey) : null;
+    const apiKey = this.config.get<string>('SENDGRID_API_KEY');
+    this.emailEnabled = !!apiKey;
+    if (apiKey) sgMail.setApiKey(apiKey);
     this.fromEmail = this.config.get<string>(
       'ESCALATION_FROM_EMAIL',
-      'Lumino AI <onboarding@resend.dev>',
+      'Lumino AI <noreply@luminoai.co.il>',
     );
     this.dashboardUrl = this.config.get<string>(
       'DASHBOARD_URL',
@@ -34,8 +35,8 @@ export class EscalationNotifierService {
     customerIdentifier: string,
     triggerReason: string,
   ): Promise<void> {
-    if (!this.resend) {
-      this.logger.warn('RESEND_API_KEY not set — skipping escalation email');
+    if (!this.emailEnabled) {
+      this.logger.warn('SENDGRID_API_KEY not set — skipping escalation email');
       return;
     }
 
@@ -136,17 +137,12 @@ export class EscalationNotifierService {
       `;
 
       // 5. Send email
-      const { error } = await this.resend.emails.send({
+      await sgMail.send({
         from: this.fromEmail,
         to: ownerEmail,
         subject: `Escalation: Customer ${maskedId} needs attention`,
         html,
       });
-
-      if (error) {
-        this.logger.error('Failed to send escalation email', error);
-        return;
-      }
 
       this.logger.log(`Escalation email sent to ${ownerEmail} for conversation ${conversationId}`);
     } catch (err: any) {

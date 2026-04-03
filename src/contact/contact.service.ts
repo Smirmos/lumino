@@ -1,19 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import sgMail from '@sendgrid/mail';
 import { ContactDto } from './contact.dto';
 
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
-  private readonly resend: Resend;
   private readonly toEmail: string;
   private readonly fromEmail: string;
 
   constructor(private config: ConfigService) {
-    this.resend = new Resend(this.config.getOrThrow<string>('RESEND_API_KEY'));
+    sgMail.setApiKey(this.config.getOrThrow<string>('SENDGRID_API_KEY'));
     this.toEmail = this.config.get<string>('CONTACT_TO_EMAIL', 'hello@luminoai.co.il');
-    this.fromEmail = this.config.get<string>('CONTACT_FROM_EMAIL', 'Lumino AI <onboarding@resend.dev>');
+    this.fromEmail = this.config.get<string>('CONTACT_FROM_EMAIL', 'Lumino AI <noreply@luminoai.co.il>');
   }
 
   async sendContactForm(dto: ContactDto): Promise<void> {
@@ -32,19 +31,18 @@ export class ContactService {
       </table>
     `;
 
-    const { error } = await this.resend.emails.send({
-      from: this.fromEmail,
-      to: this.toEmail,
-      replyTo: email,
-      subject: `New Lead: ${name} — ${interest}`,
-      html,
-    });
-
-    if (error) {
-      this.logger.error('Failed to send contact email', error);
+    try {
+      await sgMail.send({
+        from: this.fromEmail,
+        to: this.toEmail,
+        replyTo: email,
+        subject: `New Lead: ${name} — ${interest}`,
+        html,
+      });
+      this.logger.log(`Contact form sent: ${name} <${email}> — ${interest}`);
+    } catch (err: any) {
+      this.logger.error('Failed to send contact email', err.message);
       throw new Error('Failed to send email');
     }
-
-    this.logger.log(`Contact form sent: ${name} <${email}> — ${interest}`);
   }
 }
