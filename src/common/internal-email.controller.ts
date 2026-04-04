@@ -20,10 +20,14 @@ export class InternalEmailController {
   @HttpCode(200)
   async sendWelcome(
     @Headers('x-internal-secret') secret: string,
-    @Body() body: { email: string; businessName: string; dashboardUrl: string },
+    @Body() body: { email: string; businessName: string; dashboardUrl?: string; plan?: string },
   ) {
     this.validateSecret(secret);
-    await this.emailService.sendWelcomeEmail(body.email, body.businessName, body.dashboardUrl);
+    if (body.plan === 'standard') {
+      await this.emailService.sendWelcomeEmailStandard(body.email, body.businessName);
+    } else {
+      await this.emailService.sendWelcomeEmail(body.email, body.businessName, body.dashboardUrl || 'https://dashboard.luminoai.co.il');
+    }
     return { success: true };
   }
 

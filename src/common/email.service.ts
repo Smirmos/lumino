@@ -65,6 +65,53 @@ export class EmailService {
     }
   }
 
+  async sendWelcomeEmailStandard(email: string, businessName: string): Promise<void> {
+    if (!this.enabled) {
+      this.logger.warn('SENDGRID_API_KEY not set — skipping welcome email');
+      return;
+    }
+
+    const html = `
+      <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#5B4FCF;">Welcome to Lumino AI!</h2>
+        <p>Hi there,</p>
+        <p>Great news — your AI chatbot for <strong>${businessName}</strong> is being set up! Our team is configuring everything for you.</p>
+
+        <div style="margin:24px 0;padding:20px;background:#f9fafb;border-radius:12px;">
+          <h3 style="margin:0 0 12px;color:#374151;">What happens next:</h3>
+          <ul style="color:#4b5563;line-height:1.8;padding-left:20px;">
+            <li>We'll configure your AI bot with your business details</li>
+            <li>Your WhatsApp bot will be live within 24-48 hours</li>
+            <li>You'll receive a monthly performance report via email</li>
+            <li>Our team is available for any questions or updates</li>
+          </ul>
+        </div>
+
+        <p>If you need to update your business information (services, pricing, hours), just reply to this email and we'll take care of it.</p>
+
+        <p style="color:#6b7280;font-size:14px;margin-top:24px;">
+          Questions? Reply to this email or contact us at hello@luminoai.co.il
+        </p>
+
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
+        <p style="color:#9ca3af;font-size:12px;">Lumino AI — AI-powered customer service for your business</p>
+      </div>
+    `;
+
+    try {
+      await sgMail.send({
+        from: this.fromEmail,
+        to: email,
+        subject: `Welcome to Lumino AI — ${businessName}`,
+        html,
+      });
+      this.logger.log(`Welcome email (standard) sent to ${email}`);
+    } catch (err: any) {
+      this.logger.error(`Failed to send welcome email to ${email}`, err.message);
+      throw err;
+    }
+  }
+
   async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
     if (!this.enabled) {
       this.logger.warn('SENDGRID_API_KEY not set — skipping password reset email');
