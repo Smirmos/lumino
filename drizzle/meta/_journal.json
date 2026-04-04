@@ -43,6 +43,13 @@
       "when": 1775299070371,
       "tag": "0005_pink_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775300421954,
+      "tag": "0006_loose_crusher_hogan",
+      "breakpoints": true
     }
   ]
 }

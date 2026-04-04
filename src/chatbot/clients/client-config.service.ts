@@ -67,6 +67,26 @@ Pricing: ${client.pricing ?? 'Please contact us for pricing information.'}`;
     if (client.canBook) businessInfo += `\nBook an appointment: ${client.bookingUrl}`;
     sections.push(businessInfo);
 
+    // ABOUT THE BUSINESS
+    if (client.businessDescription) {
+      sections.push(`## ABOUT THE BUSINESS\n${client.businessDescription}`);
+    }
+
+    // FAQ
+    if (client.faq) {
+      sections.push(`## FREQUENTLY ASKED QUESTIONS\n${client.faq}`);
+    }
+
+    // POLICIES
+    if (client.policies) {
+      sections.push(`## POLICIES\n${client.policies}`);
+    }
+
+    // CUSTOM INSTRUCTIONS
+    if (client.customInstructions) {
+      sections.push(`## ADDITIONAL INSTRUCTIONS\n${client.customInstructions}`);
+    }
+
     // LANGUAGE
     if (client.languages.includes('auto')) {
       sections.push(`## LANGUAGE
@@ -152,6 +172,10 @@ You are an AI assistant. If directly asked, always acknowledge this honestly.`);
       holidays: row.holidays as Holiday[] | null,
       location: row.location,
       website: row.website,
+      businessDescription: row.businessDescription,
+      faq: row.faq,
+      policies: row.policies,
+      customInstructions: row.customInstructions,
       toneDescription: row.toneDescription,
       languages: row.languages,
       escalationKeywords: row.escalationKeywords,

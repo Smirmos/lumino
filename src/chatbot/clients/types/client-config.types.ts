@@ -32,6 +32,10 @@ export interface ClientConfig {
   holidays: Holiday[] | null;
   location: string | null;
   website: string | null;
+  businessDescription: string | null;
+  faq: string | null;
+  policies: string | null;
+  customInstructions: string | null;
   toneDescription: string;
   languages: string[];
   escalationKeywords: string[] | null;
