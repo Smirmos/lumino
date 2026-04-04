@@ -26,6 +26,6 @@ import { EscalationNotifierModule } from '../common/escalation-notifier.module';
     SecurityService,
     RateLimiterService,
   ],
-  exports: [ChatbotService, ClientConfigService],
+  exports: [ChatbotService, ClientConfigService, WhatsappService],
 })
 export class ChatbotModule {}

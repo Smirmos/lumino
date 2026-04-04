@@ -16,6 +16,7 @@ import { UsageRollupService } from './common/usage-rollup.service';
 import { SummarizationService } from './common/summarization.service';
 import { InternalCacheController } from './common/internal-cache.controller';
 import { InternalEmailController } from './common/internal-email.controller';
+import { InternalPromotionsController } from './common/internal-promotions.controller';
 import { EmailService } from './common/email.service';
 
 @Module({
@@ -55,7 +56,7 @@ import { EmailService } from './common/email.service';
     ContactModule,
     EscalationNotifierModule,
   ],
-  controllers: [HealthController, InternalCacheController, InternalEmailController],
+  controllers: [HealthController, InternalCacheController, InternalEmailController, InternalPromotionsController],
   providers: [AlertService, AlertSchedulerService, UsageRollupService, SummarizationService, EmailService],
   exports: [AlertService],
 })

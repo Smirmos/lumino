@@ -102,6 +102,24 @@ export const conversationSummaries = pgTable('conversation_summaries', {
   statusIdx: index('cs_status_idx').on(t.clientId, t.status),
 }));
 
+export const promotions = pgTable('promotions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  message: text('message').notNull(),
+  templateName: text('template_name'),
+  channel: text('channel').notNull().default('whatsapp'),
+  recipients: jsonb('recipients'),
+  totalRecipients: integer('total_recipients').default(0),
+  sentCount: integer('sent_count').default(0),
+  failedCount: integer('failed_count').default(0),
+  status: text('status').default('draft'),
+  sentAt: timestamp('sent_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (t) => ({
+  clientIdx: index('promo_client_idx').on(t.clientId),
+}));
+
 export const monthlyUsageRollup = pgTable('monthly_usage_rollup', {
   id: uuid('id').defaultRandom().primaryKey(),
   clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'cascade' }).notNull(),
