@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, timestamp, integer, bigint, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, boolean, timestamp, integer, bigint, jsonb, index } from 'drizzle-orm/pg-core';
 
 export const clientConfigs = pgTable('client_configs', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -6,6 +6,8 @@ export const clientConfigs = pgTable('client_configs', {
   services: text('services').notNull(),
   pricing: text('pricing'),
   businessHours: text('business_hours').notNull(),
+  businessHoursStructured: jsonb('business_hours_structured'),
+  holidays: jsonb('holidays'),
   location: text('location'),
   website: text('website'),
   toneDescription: text('tone_description').notNull().default('Friendly and professional'),

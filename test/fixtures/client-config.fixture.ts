@@ -19,6 +19,8 @@ export function createHebrewClient(overrides?: Partial<ClientConfig>): ClientCon
     bookingUrl: 'https://cal.com/dana',
     instagramPageId: null,
     whatsappPhoneId: null,
+    businessHoursStructured: null,
+    holidays: null,
     isActive: true,
     ...overrides,
   };
@@ -42,6 +44,8 @@ export function createRussianClient(overrides?: Partial<ClientConfig>): ClientCo
     bookingUrl: null,
     instagramPageId: null,
     whatsappPhoneId: null,
+    businessHoursStructured: null,
+    holidays: null,
     isActive: true,
     ...overrides,
   };
@@ -65,6 +69,8 @@ export function createMultiLangClient(overrides?: Partial<ClientConfig>): Client
     bookingUrl: 'https://tlvlaw.co.il/book',
     instagramPageId: null,
     whatsappPhoneId: null,
+    businessHoursStructured: null,
+    holidays: null,
     isActive: true,
     ...overrides,
   };

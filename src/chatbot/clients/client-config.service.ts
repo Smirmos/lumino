@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import Redis from 'ioredis';
 import { Db } from '../../db';
 import { clientConfigs } from '../../db/schema';
-import { ClientConfig } from './types/client-config.types';
+import { ClientConfig, BusinessHoursStructured, Holiday } from './types/client-config.types';
 
 @Injectable()
 export class ClientConfigService {
@@ -25,8 +25,43 @@ You help customers with questions about our products and services.`);
     // BUSINESS INFORMATION
     let businessInfo = `## BUSINESS INFORMATION
 Services: ${client.services}
-Pricing: ${client.pricing ?? 'Please contact us for pricing information.'}
-Business Hours: ${client.businessHours}`;
+Pricing: ${client.pricing ?? 'Please contact us for pricing information.'}`;
+
+    // Use structured hours if available, otherwise fall back to text
+    if (client.businessHoursStructured) {
+      businessInfo += `\nBusiness Hours:`;
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+      const dayLabels: Record<string, string> = { sunday: 'Sun', monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat' };
+      for (const day of dayNames) {
+        const dh = client.businessHoursStructured[day];
+        if (dh.isOpen) {
+          businessInfo += `\n  ${dayLabels[day]}: ${dh.openTime} - ${dh.closeTime}`;
+        } else {
+          businessInfo += `\n  ${dayLabels[day]}: Closed`;
+        }
+      }
+    } else {
+      businessInfo += `\nBusiness Hours: ${client.businessHours}`;
+    }
+
+    // Add holidays/special days
+    if (client.holidays && client.holidays.length > 0) {
+      const upcoming = client.holidays
+        .filter(h => new Date(h.date) >= new Date(new Date().toDateString()))
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 10);
+      if (upcoming.length > 0) {
+        businessInfo += `\nUpcoming Holidays / Special Days:`;
+        for (const h of upcoming) {
+          if (h.isOpen && h.openTime && h.closeTime) {
+            businessInfo += `\n  ${h.date} (${h.name}): ${h.openTime} - ${h.closeTime}`;
+          } else {
+            businessInfo += `\n  ${h.date} (${h.name}): Closed`;
+          }
+        }
+      }
+    }
+
     if (client.location) businessInfo += `\nLocation: ${client.location}`;
     if (client.website) businessInfo += `\nWebsite: ${client.website}`;
     if (client.canBook) businessInfo += `\nBook an appointment: ${client.bookingUrl}`;
@@ -113,6 +148,8 @@ You are an AI assistant. If directly asked, always acknowledge this honestly.`);
       services: row.services,
       pricing: row.pricing,
       businessHours: row.businessHours,
+      businessHoursStructured: row.businessHoursStructured as BusinessHoursStructured | null,
+      holidays: row.holidays as Holiday[] | null,
       location: row.location,
       website: row.website,
       toneDescription: row.toneDescription,

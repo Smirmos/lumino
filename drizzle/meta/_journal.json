@@ -29,6 +29,13 @@
       "when": 1775111655562,
       "tag": "0003_daily_random",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775455200000,
+      "tag": "0004_business_hours_holidays",
+      "breakpoints": true
     }
   ]
 }
