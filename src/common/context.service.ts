@@ -1,12 +1,18 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
+import { eq } from 'drizzle-orm';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { clientConfigs } from '../db/schema';
 import { Message } from './types/context.types';
 
 @Injectable()
 export class ContextService {
   private readonly logger = new Logger(ContextService.name);
 
-  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
+  constructor(
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
+    @Inject('DB') private readonly db: NodePgDatabase,
+  ) {}
 
   private convKey(channel: string, userId: string, clientId: string): string {
     return `conv:${channel}:${userId}:${clientId}`;
@@ -55,8 +61,28 @@ export class ContextService {
     await this.redis.set(`phone:${phoneNumberId}`, clientId, 'EX', 3600);
   }
 
+  private isUuid(value: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  }
+
   async getClientId(phoneNumberId: string): Promise<string | null> {
-    return this.redis.get(`phone:${phoneNumberId}`);
+    const cached = await this.redis.get(`phone:${phoneNumberId}`);
+    if (cached && this.isUuid(cached)) return cached;
+
+    // Fallback: resolve from DB by whatsappPhoneId
+    const rows = await this.db
+      .select({ id: clientConfigs.id })
+      .from(clientConfigs)
+      .where(eq(clientConfigs.whatsappPhoneId, phoneNumberId))
+      .limit(1);
+
+    if (rows.length) {
+      await this.cacheClientId(phoneNumberId, rows[0].id);
+      this.logger.log({ event: 'phone_mapping_resolved_from_db', phoneNumberId, clientId: rows[0].id });
+      return rows[0].id;
+    }
+
+    return null;
   }
 
   async cachePageId(pageId: string, clientId: string): Promise<void> {
