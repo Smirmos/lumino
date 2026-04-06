@@ -28,11 +28,11 @@ export class InternalWhatsappController {
   @HttpCode(200)
   async registerNumber(
     @Headers('x-internal-secret') secret: string,
-    @Body() body: { phoneNumberId: string; pin?: string },
+    @Body() body: { phoneNumberId: string; pin?: string; wabaId?: string },
   ) {
     this.validateSecret(secret);
 
-    const { phoneNumberId, pin = '170544' } = body;
+    const { phoneNumberId, pin = '170544', wabaId: providedWabaId } = body;
     const token = this.configService.get<string>('META_ACCESS_TOKEN');
     const headers = { Authorization: `Bearer ${token}` };
     const steps: StepResult[] = [];
@@ -102,7 +102,10 @@ export class InternalWhatsappController {
     }
 
     // Step 4: Find WABA
-    let wabaId: string | null = null;
+    let wabaId: string | null = providedWabaId || null;
+    if (wabaId) {
+      steps.push({ step: 'Find WABA', status: 'success', detail: `WABA ${wabaId} (provided by admin)` });
+    }
     const appId = this.configService.get<string>('META_APP_ID') || '1684642939651184';
 
     // Try approach 1: get WABAs from the phone number's webhook config (already accessible)
