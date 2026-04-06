@@ -44,7 +44,7 @@ export class InternalWhatsappController {
     try {
       const { data } = await axios.get(
         `${BASE}/${phoneNumberId}?fields=verified_name,display_phone_number,platform_type,quality_rating`,
-        { headers, timeout: 10000 },
+        { headers, timeout: 30000 },
       );
       displayPhone = data.display_phone_number;
       verifiedName = data.verified_name;
@@ -68,7 +68,7 @@ export class InternalWhatsappController {
         const { data } = await axios.post(
           `${BASE}/${phoneNumberId}/register`,
           { messaging_product: 'whatsapp', pin },
-          { headers, timeout: 10000 },
+          { headers, timeout: 30000 },
         );
         if (data.success) {
           steps.push({ step: 'Register number', status: 'success', detail: 'Registered on WhatsApp Cloud API' });
@@ -88,7 +88,7 @@ export class InternalWhatsappController {
     try {
       const { data } = await axios.get(
         `${BASE}/${phoneNumberId}?fields=platform_type,display_phone_number`,
-        { headers, timeout: 10000 },
+        { headers, timeout: 30000 },
       );
       if (data.platform_type === 'CLOUD_API') {
         steps.push({ step: 'Confirm registration', status: 'success', detail: `${data.display_phone_number} is active (CLOUD_API)` });
@@ -107,13 +107,13 @@ export class InternalWhatsappController {
     try {
       const { data: bizData } = await axios.get(
         `${BASE}/${businessId}/owned_whatsapp_business_accounts?fields=id,name`,
-        { headers, timeout: 10000 },
+        { headers, timeout: 30000 },
       );
       for (const waba of bizData.data || []) {
         try {
           const { data: phones } = await axios.get(
             `${BASE}/${waba.id}/phone_numbers?fields=id`,
-            { headers, timeout: 10000 },
+            { headers, timeout: 30000 },
           );
           const found = (phones.data || []).find((p: any) => p.id === phoneNumberId);
           if (found) {
@@ -138,7 +138,7 @@ export class InternalWhatsappController {
         const { data } = await axios.post(
           `${BASE}/${wabaId}/subscribed_apps`,
           'subscribed_fields=messages',
-          { headers, timeout: 10000 },
+          { headers, timeout: 30000 },
         );
         if (data.success) {
           steps.push({ step: 'Subscribe webhook', status: 'success', detail: `WABA ${wabaId} subscribed to "messages"` });
