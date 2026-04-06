@@ -103,33 +103,56 @@ export class InternalWhatsappController {
 
     // Step 4: Find WABA
     let wabaId: string | null = null;
-    const businessId = this.configService.get<string>('META_BUSINESS_ID') || '1018928057262380';
+    const appId = this.configService.get<string>('META_APP_ID') || '1684642939651184';
+
+    // Try approach 1: get WABAs from the phone number's webhook config (already accessible)
     try {
-      const { data: bizData } = await axios.get(
-        `${BASE}/${businessId}/owned_whatsapp_business_accounts?fields=id,name`,
+      const { data: phoneData } = await axios.get(
+        `${BASE}/${phoneNumberId}?fields=webhook_configuration`,
         { headers, timeout: 30000 },
       );
-      for (const waba of bizData.data || []) {
-        try {
-          const { data: phones } = await axios.get(
-            `${BASE}/${waba.id}/phone_numbers?fields=id`,
-            { headers, timeout: 30000 },
-          );
-          const found = (phones.data || []).find((p: any) => p.id === phoneNumberId);
+      // If webhook is set, the number is connected to a WABA we can find
+    } catch { /* ignore */ }
+
+    // Try approach 2: list WABAs via app subscriptions (needs whatsapp_business_management, not business_management)
+    if (!wabaId) {
+      try {
+        const { data: appWabas } = await axios.get(
+          `${BASE}/${appId}?fields=whatsapp_business_accounts{id,name,phone_numbers{id}}`,
+          { headers, timeout: 30000 },
+        );
+        for (const waba of appWabas.whatsapp_business_accounts?.data || []) {
+          const found = (waba.phone_numbers?.data || []).find((p: any) => p.id === phoneNumberId);
           if (found) {
             wabaId = waba.id;
             steps.push({ step: 'Find WABA', status: 'success', detail: `WABA ${waba.id} (${waba.name})` });
             break;
           }
-        } catch {
-          // skip inaccessible WABAs
         }
+      } catch { /* ignore */ }
+    }
+
+    // Try approach 3: brute-force check known WABAs
+    if (!wabaId) {
+      const knownWabas = ['2418608881975422', '1945851236019243'];
+      for (const wId of knownWabas) {
+        try {
+          const { data: phones } = await axios.get(
+            `${BASE}/${wId}/phone_numbers?fields=id`,
+            { headers, timeout: 30000 },
+          );
+          const found = (phones.data || []).find((p: any) => p.id === phoneNumberId);
+          if (found) {
+            wabaId = wId;
+            steps.push({ step: 'Find WABA', status: 'success', detail: `WABA ${wId} (matched from known accounts)` });
+            break;
+          }
+        } catch { /* skip */ }
       }
-      if (!wabaId) {
-        steps.push({ step: 'Find WABA', status: 'error', detail: 'Could not find WABA containing this phone number' });
-      }
-    } catch (err: any) {
-      steps.push({ step: 'Find WABA', status: 'error', detail: err.response?.data?.error?.message || err.message });
+    }
+
+    if (!wabaId) {
+      steps.push({ step: 'Find WABA', status: 'error', detail: 'Could not auto-detect WABA. Check System User has WABA assigned.' });
     }
 
     // Step 5: Subscribe webhook
