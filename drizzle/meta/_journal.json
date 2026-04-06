@@ -50,6 +50,13 @@
       "when": 1775300421954,
       "tag": "0006_loose_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775491218807,
+      "tag": "0007_fantastic_mauler",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "client_configs" ADD COLUMN "whatsapp_display_phone" text;
