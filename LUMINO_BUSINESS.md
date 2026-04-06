@@ -32,24 +32,26 @@ Clients get a dashboard to monitor conversations, handle escalations, configure 
 
 ## Pricing Plans
 
-| Feature | Standard (800₪ setup + 250₪/mo) | PRO (1,500₪ setup + 400₪/mo) | PRO+ (1,800₪ setup + 550₪/mo) |
+| Feature | Standard (300₪/mo) | PRO (500₪/mo) | PRO+ (650₪/mo) |
 |---|---|---|---|
 | WhatsApp AI Manager | Yes | Yes | Yes |
+| Dedicated WhatsApp Number | US number | Israeli number | Israeli number |
 | Business Knowledge Base | Yes | Yes | Yes |
 | AI Manager Settings (hours, tone, language) | Yes | Yes | Yes |
+| Multi-language (HE/RU/EN) | Yes | Yes | Yes |
 | Dashboard Access | No (upgrade prompt) | Yes | Yes |
 | Conversations View | No | Yes | Yes |
 | Analytics | No | Yes | Yes |
 | Escalations Inbox | No | Yes | Yes |
 | Promotions (coming soon) | No | Yes | Yes |
 | Conversation Summaries | No | No | Yes |
-| Dedicated account manager | No | No | Yes (Arina manages) |
-| Priority support | No | No | Yes |
-| Sentiment analysis on conversations | No | No | Yes |
+| Sentiment analysis | No | No | Yes |
 | Custom AI personality tuning | No | No | Yes |
+| Priority support | No | No | Yes |
+| Dedicated account manager | No | No | Yes |
 | Promotional campaigns (coming soon) | No | No | Yes |
 
-**Note:** Landing page shows setup fees (800/1500/1800₪). Monthly fees are separate.
+**No setup fees.** 3-month minimum commitment. Number management included in price (US: 50₪, Israeli: 100₪).
 
 ## What's Built & Working
 
