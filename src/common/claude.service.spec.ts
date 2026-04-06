@@ -22,6 +22,7 @@ describe('ClaudeService', () => {
   const successResponse = {
     content: [{ type: 'text' as const, text: 'Hello! How can I help?' }],
     usage: { input_tokens: 50, output_tokens: 20 },
+    stop_reason: 'end_turn',
   };
 
   beforeEach(() => {
@@ -50,10 +51,10 @@ describe('ClaudeService', () => {
       );
     });
 
-    it('always enforces max_tokens: 300', async () => {
+    it('always enforces max_tokens: 350', async () => {
       await service.generateReply({ systemPrompt: 'test', messages: [] });
       expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({ max_tokens: 300 }),
+        expect.objectContaining({ max_tokens: 350 }),
       );
     });
 
@@ -100,6 +101,41 @@ describe('ClaudeService', () => {
       mockCreate.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(successResponse), 10)));
       const result = await service.generateReply({ systemPrompt: 'test', messages: [] });
       expect(result.latencyMs).toBeGreaterThanOrEqual(5);
+    });
+  });
+
+  describe('generateReply() — truncation handling', () => {
+    it('appends contact info when response is truncated (stop_reason: max_tokens)', async () => {
+      jest.useRealTimers();
+      mockCreate.mockResolvedValue({
+        content: [{ type: 'text' as const, text: 'Our plans start at 300₪. Contact us at hello@lumino' }],
+        usage: { input_tokens: 50, output_tokens: 350 },
+        stop_reason: 'max_tokens',
+      });
+
+      const result = await service.generateReply({ systemPrompt: 'test', messages: [] });
+      expect(result.text).toContain('hello@luminoai.co.il');
+      expect(result.text).toContain('0512309102');
+    });
+
+    it('trims to last complete sentence when truncated', async () => {
+      jest.useRealTimers();
+      mockCreate.mockResolvedValue({
+        content: [{ type: 'text' as const, text: 'We have three plans. Standard costs 300₪. PRO costs 500₪. Contact us at hello@lum' }],
+        usage: { input_tokens: 50, output_tokens: 350 },
+        stop_reason: 'max_tokens',
+      });
+
+      const result = await service.generateReply({ systemPrompt: 'test', messages: [] });
+      expect(result.text).toContain('PRO costs 500₪.');
+      expect(result.text).not.toContain('Contact us at hello@lum');
+    });
+
+    it('does NOT append contact info when response completes normally', async () => {
+      jest.useRealTimers();
+      const result = await service.generateReply({ systemPrompt: 'test', messages: [] });
+      expect(result.text).toBe('Hello! How can I help?');
+      expect(result.text).not.toContain('0512309102');
     });
   });
 

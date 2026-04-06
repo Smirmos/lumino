@@ -20,7 +20,7 @@ export class ClaudeService {
       { name: 'claude.generateReply', op: 'ai.completion' },
       async (span) => {
         const model = 'claude-haiku-4-5';
-        const maxTokens = 300;
+        const maxTokens = 350;
         let lastError: Error | null = null;
 
         span.setAttribute('ai.model', model);
@@ -39,9 +39,24 @@ export class ClaudeService {
             });
 
             const latencyMs = Date.now() - start;
-            const text = response.content[0].type === 'text' ? response.content[0].text : '';
+            let text = response.content[0].type === 'text' ? response.content[0].text : '';
             const inputTokens = response.usage.input_tokens;
             const outputTokens = response.usage.output_tokens;
+
+            // If truncated, trim to last complete sentence and append contact info
+            if (response.stop_reason === 'max_tokens') {
+              const lastSentenceEnd = Math.max(
+                text.lastIndexOf('.'),
+                text.lastIndexOf('!'),
+                text.lastIndexOf('?'),
+                text.lastIndexOf('。'),
+              );
+              if (lastSentenceEnd > text.length * 0.5) {
+                text = text.slice(0, lastSentenceEnd + 1);
+              }
+              text += '\n\n📞 0512309102 | ✉️ hello@luminoai.co.il';
+              this.logger.warn({ event: 'claude_response_truncated', outputTokens, maxTokens });
+            }
 
             span.setAttribute('ai.input_tokens', inputTokens);
             span.setAttribute('ai.output_tokens', outputTokens);
