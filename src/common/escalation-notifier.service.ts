@@ -95,7 +95,7 @@ export class EscalationNotifierService {
 
       const messagesHtml = recentMessages
         .map((msg) => {
-          const roleLabel = msg.role === 'user' ? 'Customer' : 'Bot';
+          const roleLabel = msg.role === 'user' ? 'Customer' : 'AI Manager';
           const time = msg.createdAt
             ? new Date(msg.createdAt).toLocaleTimeString('en-US', {
                 hour: '2-digit',
@@ -131,7 +131,7 @@ export class EscalationNotifierService {
           </div>
 
           <p style="color:#9ca3af;font-size:12px;margin-top:24px;">
-            The bot has stopped responding to this customer. Please follow up directly.
+            The AI Manager has stopped responding to this customer. Please follow up directly.
           </p>
         </div>
       `;

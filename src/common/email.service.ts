@@ -25,7 +25,7 @@ export class EmailService {
       <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#5B4FCF;">Welcome to Lumino AI!</h2>
         <p>Hi there,</p>
-        <p>Your account for <strong>${businessName}</strong> has been created. You can now access your dashboard to manage your AI chatbot.</p>
+        <p>Your account for <strong>${businessName}</strong> has been created. You can now access your dashboard to manage your AI Manager.</p>
 
         <div style="margin:24px 0;">
           <a href="${dashboardUrl}/login"
@@ -75,13 +75,13 @@ export class EmailService {
       <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;">
         <h2 style="color:#5B4FCF;">Welcome to Lumino AI!</h2>
         <p>Hi there,</p>
-        <p>Great news — your AI chatbot for <strong>${businessName}</strong> is being set up! Our team is configuring everything for you.</p>
+        <p>Great news — your AI Manager for <strong>${businessName}</strong> is being set up! Our team is configuring everything for you.</p>
 
         <div style="margin:24px 0;padding:20px;background:#f9fafb;border-radius:12px;">
           <h3 style="margin:0 0 12px;color:#374151;">What happens next:</h3>
           <ul style="color:#4b5563;line-height:1.8;padding-left:20px;">
-            <li>We'll configure your AI bot with your business details</li>
-            <li>Your WhatsApp bot will be live within 24-48 hours</li>
+            <li>We'll configure your AI Manager with your business details</li>
+            <li>Your WhatsApp AI Manager will be live within 24-48 hours</li>
             <li>You'll receive a monthly performance report via email</li>
             <li>Our team is available for any questions or updates</li>
           </ul>
