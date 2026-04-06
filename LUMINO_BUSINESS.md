@@ -44,14 +44,20 @@ Clients get a dashboard to monitor conversations, handle escalations, configure 
 | Analytics | No | Yes | Yes |
 | Escalations Inbox | No | Yes | Yes |
 | Promotions (coming soon) | No | Yes | Yes |
-| Conversation Summaries | No | No | Yes |
+| Conversation Summaries (after every conversation) | No | No | Yes |
 | Sentiment analysis | No | No | Yes |
 | Custom AI personality tuning | No | No | Yes |
 | Priority support | No | No | Yes |
 | Dedicated account manager | No | No | Yes |
 | Promotional campaigns (coming soon) | No | No | Yes |
 
-**No setup fees.** 3-month minimum commitment. Number management included in price (US: 50₪, Israeli: 100₪).
+**No setup fees. No minimum commitment. Cancel anytime.**
+Number management included in price (US: 50₪, Israeli: 100₪).
+
+### Payment & Billing
+- Automatic monthly subscription via **GreenInvoice**
+- Kabala (receipt) sent automatically each billing cycle
+- Upgrade or downgrade between plans at any time
 
 ## What's Built & Working
 

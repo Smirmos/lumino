@@ -1,6 +1,9 @@
-import { Controller, Post, Body, HttpCode, UnauthorizedException, Headers, Logger } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UnauthorizedException, Headers, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { Db } from '../db';
+import { clientConfigs } from '../db/schema';
+import { eq } from 'drizzle-orm';
 
 const API_VERSION = 'v21.0';
 const BASE = `https://graph.facebook.com/${API_VERSION}`;
@@ -15,7 +18,10 @@ interface StepResult {
 export class InternalWhatsappController {
   private readonly logger = new Logger(InternalWhatsappController.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject('DB') private readonly db: Db,
+  ) {}
 
   private validateSecret(secret: string) {
     const expected = this.configService.get<string>('INTERNAL_SECRET');
@@ -137,7 +143,7 @@ export class InternalWhatsappController {
 
     // Try approach 3: brute-force check known WABAs
     if (!wabaId) {
-      const knownWabas = ['2418608881975422', '1945851236019243'];
+      const knownWabas = ['2418608881975422', '1945851236019243', '1434327685132922'];
       for (const wId of knownWabas) {
         try {
           const { data: phones } = await axios.get(
@@ -174,6 +180,15 @@ export class InternalWhatsappController {
       }
     } else {
       steps.push({ step: 'Subscribe webhook', status: 'skipped', detail: 'Skipped — WABA not found' });
+    }
+
+    // Store display phone in DB for any client using this phone number
+    if (displayPhone) {
+      try {
+        await this.db.update(clientConfigs)
+          .set({ whatsappDisplayPhone: displayPhone })
+          .where(eq(clientConfigs.whatsappPhoneId, phoneNumberId));
+      } catch { /* non-blocking */ }
     }
 
     this.logger.log({ event: 'whatsapp_number_registered', phoneNumberId, displayPhone, verifiedName, wabaId });

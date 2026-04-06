@@ -23,6 +23,7 @@ export const clientConfigs = pgTable('client_configs', {
   bookingUrl: text('booking_url'),
   instagramPageId: text('instagram_page_id'),
   whatsappPhoneId: text('whatsapp_phone_id'),
+  whatsappDisplayPhone: text('whatsapp_display_phone'),
   isActive: boolean('is_active').default(true),
   subscriptionPlan: text('subscription_plan').default('standard'),
   dedicatedNumber: boolean('dedicated_number').default(false),
