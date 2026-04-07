@@ -180,41 +180,18 @@ export class ChatbotService {
         };
       }
 
-      // Step 13: Persist assistant message (fire and forget)
-      void this.usageService.persistMessage(
-        input.clientId,
-        input.channel,
-        input.userId,
-        'assistant',
-        result.text,
-        result.inputTokens,
-        result.outputTokens,
-      );
-
-      // Step 14: Append both messages to Redis context
-      await this.contextService.appendMessage(input.channel, hashedUserId, input.clientId, {
-        role: 'user',
-        content: input.text,
-      });
-      await this.contextService.appendMessage(input.channel, hashedUserId, input.clientId, {
-        role: 'assistant',
-        content: result.text,
-      });
-
-      // Step 15: Detect escalation
+      // Step 13: Detect escalation and clean reply BEFORE persisting
       const shouldEscalate =
         result.text.includes('[ESCALATE]') ||
         this.securityService.checkEscalationKeywords(input.text, client.escalationKeywords);
 
       let cleanReply: string;
       if (shouldEscalate) {
-        // Replace Claude's reply with handoff message
         cleanReply = "I'm connecting you with a team member who can help you further.";
 
         void this.usageService.markEscalated(input.clientId, input.channel, input.userId);
         void this.usageService.markMessageAsEscalationTrigger(input.clientId, input.channel, input.userId);
 
-        // Determine trigger reason for email
         const triggerReason = result.text.includes('[ESCALATE]')
           ? 'AI-initiated escalation'
           : 'Keyword match in customer message';
@@ -227,6 +204,27 @@ export class ChatbotService {
       } else {
         cleanReply = result.text.replace('[ESCALATE]', '').trim();
       }
+
+      // Step 14: Persist cleaned assistant message (fire and forget)
+      void this.usageService.persistMessage(
+        input.clientId,
+        input.channel,
+        input.userId,
+        'assistant',
+        cleanReply,
+        result.inputTokens,
+        result.outputTokens,
+      );
+
+      // Step 15: Append both messages to Redis context
+      await this.contextService.appendMessage(input.channel, hashedUserId, input.clientId, {
+        role: 'user',
+        content: input.text,
+      });
+      await this.contextService.appendMessage(input.channel, hashedUserId, input.clientId, {
+        role: 'assistant',
+        content: cleanReply,
+      });
 
       // Step 16: Send reply via channel API
       if (input.channel === 'instagram') {
