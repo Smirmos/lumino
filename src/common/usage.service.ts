@@ -49,6 +49,39 @@ export class UsageService {
           customerIdentifier,
           messageCount: 1,
         });
+
+        // Increment conversations count in monthly rollup
+        try {
+          const month = new Date().toISOString().slice(0, 7);
+          const rollup = await this.db
+            .select({ id: monthlyUsageRollup.id })
+            .from(monthlyUsageRollup)
+            .where(
+              and(
+                eq(monthlyUsageRollup.clientId, clientId),
+                eq(monthlyUsageRollup.month, month),
+              ),
+            )
+            .limit(1);
+
+          if (rollup.length > 0) {
+            await this.db
+              .update(monthlyUsageRollup)
+              .set({
+                totalConversations: sql`${monthlyUsageRollup.totalConversations} + 1`,
+              })
+              .where(eq(monthlyUsageRollup.id, rollup[0].id));
+          } else {
+            await this.db.insert(monthlyUsageRollup).values({
+              clientId,
+              month,
+              totalConversations: 1,
+              totalMessages: 0,
+              totalInputTokens: 0,
+              totalOutputTokens: 0,
+            });
+          }
+        } catch { /* non-blocking */ }
       }
     } catch (err: any) {
       this.logger.error('Failed to upsert conversation', err.message);
