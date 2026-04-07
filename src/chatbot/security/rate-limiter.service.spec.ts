@@ -28,13 +28,13 @@ describe('RateLimiterService', () => {
       expect(await service.isRateLimited(userId, clientId)).toBe(false);
     });
 
-    it('returns false on third message (limit is 3, so count 2 < 3)', async () => {
-      await redis.set(`rate:min:${clientId}:${userId}`, '2');
+    it('returns false on 9th message (limit is 10, so count 9 < 10)', async () => {
+      await redis.set(`rate:min:${clientId}:${userId}`, '9');
       expect(await service.isRateLimited(userId, clientId)).toBe(false);
     });
 
-    it('returns true on fourth message (count >= 3)', async () => {
-      await redis.set(`rate:min:${clientId}:${userId}`, '3');
+    it('returns true on 11th message (count >= 10)', async () => {
+      await redis.set(`rate:min:${clientId}:${userId}`, '10');
       expect(await service.isRateLimited(userId, clientId)).toBe(true);
     });
 
@@ -46,20 +46,20 @@ describe('RateLimiterService', () => {
   });
 
   describe('isRateLimited() — hour window', () => {
-    it('returns false after 19 messages', async () => {
-      await redis.set(`rate:hr:${clientId}:${userId}`, '19');
+    it('returns false after 59 messages', async () => {
+      await redis.set(`rate:hr:${clientId}:${userId}`, '59');
       expect(await service.isRateLimited(userId, clientId)).toBe(false);
     });
 
-    it('returns true on 21st message (count >= 20)', async () => {
-      await redis.set(`rate:hr:${clientId}:${userId}`, '20');
+    it('returns true on 61st message (count >= 60)', async () => {
+      await redis.set(`rate:hr:${clientId}:${userId}`, '60');
       expect(await service.isRateLimited(userId, clientId)).toBe(true);
     });
   });
 
   describe('isRateLimited() — day window', () => {
-    it('returns true after 101 messages (count >= 100)', async () => {
-      await redis.set(`rate:day:${clientId}:${userId}`, '100');
+    it('returns true after 200 messages (count >= 200)', async () => {
+      await redis.set(`rate:day:${clientId}:${userId}`, '200');
       expect(await service.isRateLimited(userId, clientId)).toBe(true);
     });
   });
@@ -145,13 +145,13 @@ describe('RateLimiterService', () => {
     });
 
     it('returns minute as blockedWindow when minute limit exceeded', async () => {
-      await redis.set(`rate:min:${clientId}:${userId}`, '3');
+      await redis.set(`rate:min:${clientId}:${userId}`, '10');
       const status = await service.getRateLimitStatus(userId, clientId);
       expect(status.blockedWindow).toBe('minute');
     });
 
     it('returns hour as blockedWindow when hour limit exceeded', async () => {
-      await redis.set(`rate:hr:${clientId}:${userId}`, '20');
+      await redis.set(`rate:hr:${clientId}:${userId}`, '60');
       const status = await service.getRateLimitStatus(userId, clientId);
       expect(status.blockedWindow).toBe('hour');
     });

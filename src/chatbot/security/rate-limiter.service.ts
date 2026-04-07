@@ -8,9 +8,9 @@ interface RateLimitWindow {
 }
 
 const WINDOWS: Record<string, RateLimitWindow> = {
-  minute: { ttl: 60, limit: 3, key: 'min' },
-  hour: { ttl: 3600, limit: 20, key: 'hr' },
-  day: { ttl: 86400, limit: 100, key: 'day' },
+  minute: { ttl: 60, limit: 10, key: 'min' },
+  hour: { ttl: 3600, limit: 60, key: 'hr' },
+  day: { ttl: 86400, limit: 200, key: 'day' },
 };
 
 export interface RateLimitStatus {

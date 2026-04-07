@@ -137,9 +137,16 @@ export class ChatbotService {
     Sentry.setTag('channel', input.channel);
     Sentry.setUser({ id: hashedUserId });
 
-    // Step 7: Acquire Redis lock
+    // Step 7: Acquire Redis lock (prevents concurrent processing for same user)
     const locked = await this.contextService.acquireLock(input.channel, hashedUserId, input.clientId);
     if (!locked) {
+      this.logger.warn({
+        event: 'message_dropped_lock_held',
+        clientId: input.clientId,
+        channel: input.channel,
+        userId: hashedUserId,
+        reason: 'Previous message still being processed',
+      });
       return { reply: '', escalated: false, status: 'rate_limited', inputTokens: 0, outputTokens: 0 };
     }
 
