@@ -54,7 +54,7 @@ export class ClaudeService {
               if (lastSentenceEnd > text.length * 0.5) {
                 text = text.slice(0, lastSentenceEnd + 1);
               }
-              text += '\n\n📞 0512309102 | ✉️ hello@luminoai.co.il';
+              text += '\n\n✉️ hello@luminoai.co.il | 🌐 luminoai.co.il';
               this.logger.warn({ event: 'claude_response_truncated', outputTokens, maxTokens });
             }
 

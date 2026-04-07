@@ -115,7 +115,7 @@ describe('ClaudeService', () => {
 
       const result = await service.generateReply({ systemPrompt: 'test', messages: [] });
       expect(result.text).toContain('hello@luminoai.co.il');
-      expect(result.text).toContain('0512309102');
+      expect(result.text).toContain('luminoai.co.il');
     });
 
     it('trims to last complete sentence when truncated', async () => {
@@ -135,7 +135,7 @@ describe('ClaudeService', () => {
       jest.useRealTimers();
       const result = await service.generateReply({ systemPrompt: 'test', messages: [] });
       expect(result.text).toBe('Hello! How can I help?');
-      expect(result.text).not.toContain('0512309102');
+      expect(result.text).not.toContain('luminoai.co.il');
     });
   });
 
