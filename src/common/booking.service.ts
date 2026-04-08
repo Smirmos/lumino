@@ -200,8 +200,8 @@ export class BookingService {
 
     if (!user) return;
 
-    const acceptUrl = `${this.dashboardUrl}/booking-action?token=${data.actionToken}&action=accept`;
-    const declineUrl = `${this.dashboardUrl}/booking-action?token=${data.actionToken}&action=decline`;
+    const acceptUrl = `${this.dashboardUrl}/api/booking-action?token=${data.actionToken}&action=accept`;
+    const declineUrl = `${this.dashboardUrl}/api/booking-action?token=${data.actionToken}&action=decline`;
 
     const dateStr = data.startTime.toLocaleDateString('en-IL', {
       weekday: 'long',
