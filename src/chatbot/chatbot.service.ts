@@ -194,7 +194,14 @@ export class ChatbotService {
 
       let cleanReply: string;
       if (shouldEscalate) {
-        cleanReply = "I'm connecting you with a team member who can help you further.";
+        // Detect language from user message for escalation reply
+        const hasHebrew = /[\u0590-\u05FF]/.test(input.text);
+        const hasCyrillic = /[\u0400-\u04FF]/.test(input.text);
+        cleanReply = hasHebrew
+          ? 'אני מעביר אותך לנציג שיוכל לעזור לך. נחזור אליך בהקדם.'
+          : hasCyrillic
+          ? 'Подключаю вас к нашему специалисту. Мы свяжемся с вами в ближайшее время.'
+          : "I'm connecting you with a team member who can help you further.";
 
         void this.usageService.markEscalated(input.clientId, input.channel, input.userId);
         void this.usageService.markMessageAsEscalationTrigger(input.clientId, input.channel, input.userId);

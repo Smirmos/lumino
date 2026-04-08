@@ -141,6 +141,22 @@ describe('SecurityService', () => {
       expect(service.checkEscalationKeywords('это недопустимо', null)).toBe(true);
     });
 
+    it('detects Russian "позови человека" (call a person)', () => {
+      expect(service.checkEscalationKeywords('Позови человека', null)).toBe(true);
+    });
+
+    it('detects Russian "хочу с человеком" (want to talk to a person)', () => {
+      expect(service.checkEscalationKeywords('Я хочу с человеком поговорить', null)).toBe(true);
+    });
+
+    it('detects English "talk to a human"', () => {
+      expect(service.checkEscalationKeywords('I want to talk to a human', null)).toBe(true);
+    });
+
+    it('detects Hebrew "לדבר עם אדם" (speak with a person)', () => {
+      expect(service.checkEscalationKeywords('אני רוצה לדבר עם אדם', null)).toBe(true);
+    });
+
     it('detects custom keywords from client config', () => {
       expect(service.checkEscalationKeywords('this is urgent please help', ['urgent', 'cancel'])).toBe(true);
     });

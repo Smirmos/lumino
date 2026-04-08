@@ -14,9 +14,20 @@ const INJECTION_PATTERNS = [
 ];
 
 const ESCALATION_KEYWORDS: Record<string, string[]> = {
-  he: ['מנהל', 'החזר כספי', 'תביעה', 'עורך דין', 'תלונה', 'לא מקובל', 'שערוריה'],
-  ru: ['менеджер', 'возврат', 'жалоба', 'судиться', 'недопустимо', 'претензия', 'скандал'],
-  en: ['manager', 'refund', 'lawsuit', 'complaint', 'unacceptable', 'legal action', 'escalate'],
+  he: [
+    'מנהל', 'החזר כספי', 'תביעה', 'עורך דין', 'תלונה', 'לא מקובל', 'שערוריה',
+    'תקשר אותי', 'לדבר עם אדם', 'נציג אנושי', 'בן אדם אמיתי', 'תעביר אותי',
+  ],
+  ru: [
+    'менеджер', 'возврат', 'жалоба', 'судиться', 'недопустимо', 'претензия', 'скандал',
+    'позови человека', 'живой человек', 'оператор', 'хочу с человеком', 'переключи на человека',
+    'не хочу с ботом', 'больше не напишу',
+  ],
+  en: [
+    'manager', 'refund', 'lawsuit', 'complaint', 'unacceptable', 'legal action', 'escalate',
+    'talk to a human', 'real person', 'speak to someone', 'connect me', 'transfer me',
+    'not a bot', 'live agent',
+  ],
 };
 
 @Injectable()
