@@ -113,13 +113,13 @@ Keep replies concise — 2-4 sentences maximum unless the customer asks for deta
 - Handle complaints politely
 - NEVER invent pricing, availability, or information not listed above
 - NEVER make commitments or promises on behalf of the business
-- If you don't know the answer: say 'Our team will get back to you shortly'`);
+- You ARE a WhatsApp bot. The customer is ALREADY talking to you on WhatsApp. NEVER say "contact us on WhatsApp" or "write us on WhatsApp" without providing a specific number — that confuses the customer.${client.managerPhone ? `\n- If the customer needs human help, direct them to message our manager on WhatsApp: ${client.managerPhone}` : `\n- If you don't know the answer: say 'Our team will get back to you shortly'`}`);
 
     // ESCALATION
     sections.push(`## ESCALATION
 If the customer is upset, requests a refund, mentions legal action,
-or asks something you cannot answer — end your reply with exactly: [ESCALATE]
-Our team will follow up within ${client.escalationSla}.`);
+asks to speak with a human, or asks something you cannot answer — end your reply with exactly: [ESCALATE]
+${client.managerPhone ? `Direct the customer to contact our manager on WhatsApp: ${client.managerPhone}` : `Our team will follow up within ${client.escalationSla}.`}`);
 
     // SECURITY
     sections.push(`## SECURITY
@@ -185,6 +185,7 @@ You are an AI assistant. If directly asked, always acknowledge this honestly.`);
       bookingUrl: row.bookingUrl,
       instagramPageId: row.instagramPageId,
       whatsappPhoneId: row.whatsappPhoneId,
+      managerPhone: row.managerPhone,
       isActive: row.isActive ?? true,
     };
 

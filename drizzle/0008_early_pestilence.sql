@@ -1,0 +1,1 @@
+ALTER TABLE "client_configs" ADD COLUMN "manager_phone" text;

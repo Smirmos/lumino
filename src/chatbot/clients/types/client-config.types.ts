@@ -45,5 +45,6 @@ export interface ClientConfig {
   bookingUrl: string | null;
   instagramPageId: string | null;
   whatsappPhoneId: string | null;
+  managerPhone: string | null;
   isActive: boolean;
 }
