@@ -11,6 +11,8 @@ import { UsageService } from '../common/usage.service';
 import { SecurityService } from './security/security.service';
 import { RateLimiterService } from './security/rate-limiter.service';
 import { EscalationNotifierModule } from '../common/escalation-notifier.module';
+import { AvailabilityService } from '../common/availability.service';
+import { BookingService } from '../common/booking.service';
 
 @Module({
   imports: [EscalationNotifierModule],
@@ -25,6 +27,8 @@ import { EscalationNotifierModule } from '../common/escalation-notifier.module';
     UsageService,
     SecurityService,
     RateLimiterService,
+    AvailabilityService,
+    BookingService,
   ],
   exports: [ChatbotService, ClientConfigService, WhatsappService],
 })

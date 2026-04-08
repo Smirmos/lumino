@@ -10,6 +10,8 @@ import { RateLimiterService } from './security/rate-limiter.service';
 import { InstagramService } from './instagram/instagram.service';
 import { WhatsappService } from './whatsapp/whatsapp.service';
 import { EscalationNotifierService } from '../common/escalation-notifier.service';
+import { AvailabilityService } from '../common/availability.service';
+import { BookingService } from '../common/booking.service';
 import { ChatbotRequestLog, ChatbotSecurityLog } from '../common/types/log.types';
 
 export interface HandleMessageInput {
@@ -43,6 +45,8 @@ export class ChatbotService {
     private readonly instagramService: InstagramService,
     private readonly whatsappService: WhatsappService,
     private readonly escalationNotifier: EscalationNotifierService,
+    private readonly availabilityService: AvailabilityService,
+    private readonly bookingService: BookingService,
   ) {}
 
   async handleMessage(input: HandleMessageInput): Promise<HandleMessageOutput> {
@@ -160,8 +164,22 @@ export class ChatbotService {
       // Step 10: Load context
       const history = await this.contextService.getContext(input.channel, hashedUserId, input.clientId);
 
-      // Step 11: Build system prompt
-      const systemPrompt = this.clientConfigService.buildSystemPrompt(client);
+      // Step 11: Fetch booking availability (if enabled) + build system prompt
+      let bookingAvailability: string | undefined;
+      if (client.bookingEnabled) {
+        try {
+          const today = new Date();
+          const horizon = new Date(today);
+          horizon.setDate(today.getDate() + (client.bookingHorizonDays || 7));
+          const fromDate = today.toISOString().slice(0, 10);
+          const toDate = horizon.toISOString().slice(0, 10);
+          const availability = await this.availabilityService.getAvailableSlots(input.clientId, fromDate, toDate);
+          bookingAvailability = this.availabilityService.formatSlotsForPrompt(availability);
+        } catch (err: any) {
+          this.logger.warn({ event: 'booking_availability_failed', error: err.message });
+        }
+      }
+      const systemPrompt = this.clientConfigService.buildSystemPrompt(client, bookingAvailability);
 
       // Step 12: Call Claude
       let result;
@@ -217,6 +235,32 @@ export class ChatbotService {
         );
       } else {
         cleanReply = result.text.replace('[ESCALATE]', '').trim();
+
+        // Step 13b: Parse booking tags
+        const bookMatch = cleanReply.match(/\[BOOK:(.+?)\|(.+?)\|(.+?)\|(.+?)\]/);
+        if (bookMatch) {
+          const [, customerName, customerEmail, service, dateTime] = bookMatch;
+          cleanReply = cleanReply.replace(/\[BOOK:.*?\]/, '').trim();
+          void this.bookingService.createBooking({
+            clientId: input.clientId,
+            customerName,
+            customerEmail,
+            customerPhone: input.userId,
+            service,
+            startTime: dateTime.includes('T') ? dateTime : `${dateTime}:00`,
+          }).then((res) => {
+            if (!res.success) {
+              this.logger.warn({ event: 'booking_from_bot_failed', error: res.error, clientId: input.clientId });
+            }
+          });
+        }
+
+        const cancelMatch = cleanReply.match(/\[CANCEL_BOOK:(.+?)\|(.+?)\]/);
+        if (cancelMatch) {
+          cleanReply = cleanReply.replace(/\[CANCEL_BOOK:.*?\]/, '').trim();
+          // Cancel handling would require looking up the appointment — log for now
+          this.logger.log({ event: 'booking_cancel_requested', email: cancelMatch[1], dateTime: cancelMatch[2] });
+        }
       }
 
       // Step 14: Persist cleaned assistant message (fire and forget)

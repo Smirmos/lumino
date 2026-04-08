@@ -43,6 +43,13 @@ export interface ClientConfig {
   fallbackMessage: string | null;
   canBook: boolean;
   bookingUrl: string | null;
+  bookingEnabled: boolean;
+  slotDurationMinutes: number;
+  maxConcurrentBookings: number;
+  bufferMinutes: number;
+  bookingLeadHours: number;
+  bookingHorizonDays: number;
+  timezone: string;
   instagramPageId: string | null;
   whatsappPhoneId: string | null;
   managerPhone: string | null;

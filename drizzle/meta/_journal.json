@@ -64,6 +64,13 @@
       "when": 1775649214830,
       "tag": "0008_early_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775652497596,
+      "tag": "0009_giant_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

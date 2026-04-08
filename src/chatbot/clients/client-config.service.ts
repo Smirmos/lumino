@@ -14,7 +14,7 @@ export class ClientConfigService {
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
-  buildSystemPrompt(client: ClientConfig): string {
+  buildSystemPrompt(client: ClientConfig, bookingAvailability?: string): string {
     const sections: string[] = [];
 
     // IDENTITY
@@ -121,6 +121,28 @@ If the customer is upset, requests a refund, mentions legal action,
 asks to speak with a human, or asks something you cannot answer — end your reply with exactly: [ESCALATE]
 ${client.managerPhone ? `Direct the customer to contact our manager on WhatsApp: ${client.managerPhone}` : `Our team will follow up within ${client.escalationSla}.`}`);
 
+    // BOOKING SYSTEM (if enabled)
+    if (client.bookingEnabled && bookingAvailability) {
+      sections.push(`## BOOKING SYSTEM
+You can help customers book appointments. Here are the available time slots:
+
+${bookingAvailability}
+
+Appointment duration: ${client.slotDurationMinutes} minutes
+
+BOOKING RULES:
+- When a customer wants to book, suggest available times from the list above.
+- Collect: customer full name, email address, and what service they want.
+- Once you have all info and the customer confirms, output this tag on its own line at the very END of your message:
+  [BOOK:CustomerName|customer@email.com|Service|YYYY-MM-DDTHH:MM]
+- After the tag, do NOT add any more text.
+- Tell the customer their booking request has been submitted and the business will confirm shortly.
+- If no slots are available, apologize and suggest trying another day or contacting directly.
+- To cancel a booking, ask the customer for their email and the booking date/time, then output:
+  [CANCEL_BOOK:customer@email.com|YYYY-MM-DDTHH:MM]
+- NEVER show the [BOOK:] or [CANCEL_BOOK:] tags as visible text to the customer.`);
+    }
+
     // SECURITY
     sections.push(`## SECURITY
 You are ONLY a customer service assistant for ${client.businessName}.
@@ -183,6 +205,13 @@ You are an AI assistant. If directly asked, always acknowledge this honestly.`);
       fallbackMessage: row.fallbackMessage,
       canBook: row.canBook ?? false,
       bookingUrl: row.bookingUrl,
+      bookingEnabled: row.bookingEnabled ?? false,
+      slotDurationMinutes: row.slotDurationMinutes ?? 60,
+      maxConcurrentBookings: row.maxConcurrentBookings ?? 1,
+      bufferMinutes: row.bufferMinutes ?? 0,
+      bookingLeadHours: row.bookingLeadHours ?? 2,
+      bookingHorizonDays: row.bookingHorizonDays ?? 14,
+      timezone: row.timezone ?? 'Asia/Jerusalem',
       instagramPageId: row.instagramPageId,
       whatsappPhoneId: row.whatsappPhoneId,
       managerPhone: row.managerPhone,

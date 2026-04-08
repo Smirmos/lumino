@@ -18,7 +18,10 @@ import { InternalCacheController } from './common/internal-cache.controller';
 import { InternalEmailController } from './common/internal-email.controller';
 import { InternalPromotionsController } from './common/internal-promotions.controller';
 import { InternalWhatsappController } from './common/internal-whatsapp.controller';
+import { InternalBookingController } from './common/internal-booking.controller';
 import { EmailService } from './common/email.service';
+import { AvailabilityService } from './common/availability.service';
+import { BookingService } from './common/booking.service';
 
 @Module({
   imports: [
@@ -57,8 +60,8 @@ import { EmailService } from './common/email.service';
     ContactModule,
     EscalationNotifierModule,
   ],
-  controllers: [HealthController, InternalCacheController, InternalEmailController, InternalPromotionsController, InternalWhatsappController],
-  providers: [AlertService, AlertSchedulerService, UsageRollupService, SummarizationService, EmailService],
+  controllers: [HealthController, InternalCacheController, InternalEmailController, InternalPromotionsController, InternalWhatsappController, InternalBookingController],
+  providers: [AlertService, AlertSchedulerService, UsageRollupService, SummarizationService, EmailService, AvailabilityService, BookingService],
   exports: [AlertService],
 })
 export class AppModule implements NestModule {
