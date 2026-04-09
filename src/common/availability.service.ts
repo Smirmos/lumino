@@ -152,6 +152,8 @@ export class AvailabilityService {
     const closeMinutes = closeH * 60 + closeM;
     const step = durationMinutes + bufferMinutes;
 
+    const now = new Date();
+
     for (let m = openMinutes; m + durationMinutes <= closeMinutes; m += step) {
       const hours = Math.floor(m / 60);
       const mins = m % 60;
@@ -159,6 +161,9 @@ export class AvailabilityService {
 
       const slotStart = new Date(`${date}T${timeStr}:00`);
       const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60000);
+
+      // Skip slots in the past
+      if (slotStart < now) continue;
 
       // Count overlapping bookings
       const overlapping = existingBookings.filter((b) => {
