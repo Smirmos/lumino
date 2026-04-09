@@ -239,7 +239,16 @@ export class ChatbotService {
         // Step 13b: Parse booking tags
         const bookMatch = cleanReply.match(/\[BOOK:(.+?)\|(.+?)\|(.+?)\|(.+?)\]/);
         if (bookMatch) {
-          const [, customerName, customerEmail, service, dateTime] = bookMatch;
+          const [fullMatch, customerName, customerEmail, service, dateTime] = bookMatch;
+          this.logger.log({
+            event: 'booking_tag_detected',
+            clientId: input.clientId,
+            customerName,
+            customerEmail,
+            service,
+            dateTime,
+            rawTag: fullMatch,
+          });
           cleanReply = cleanReply.replace(/\[BOOK:.*?\]/, '').trim();
           void this.bookingService.createBooking({
             clientId: input.clientId,
@@ -249,9 +258,20 @@ export class ChatbotService {
             service,
             startTime: dateTime.includes('T') ? dateTime : `${dateTime}:00`,
           }).then((res) => {
-            if (!res.success) {
-              this.logger.warn({ event: 'booking_from_bot_failed', error: res.error, clientId: input.clientId });
+            if (res.success) {
+              this.logger.log({ event: 'booking_from_bot_success', appointmentId: res.appointmentId, clientId: input.clientId });
+            } else {
+              this.logger.error({ event: 'booking_from_bot_failed', error: res.error, clientId: input.clientId, customerName, dateTime });
             }
+          }).catch((err) => {
+            this.logger.error({ event: 'booking_from_bot_exception', error: err.message, clientId: input.clientId, customerName, dateTime });
+          });
+        } else if (cleanReply.includes('[BOOK') || cleanReply.includes('BOOK:')) {
+          // Log cases where the bot tried to output a booking tag but it didn't match the regex
+          this.logger.warn({
+            event: 'booking_tag_malformed',
+            clientId: input.clientId,
+            snippet: cleanReply.slice(cleanReply.indexOf('[BOOK'), cleanReply.indexOf('[BOOK') + 100),
           });
         }
 

@@ -114,7 +114,14 @@ export class BookingService {
 
       return { success: true, appointmentId: appointment.id };
     } catch (err: any) {
-      this.logger.error({ event: 'booking_create_failed', error: err.message });
+      this.logger.error({
+        event: 'booking_create_failed',
+        error: err.message,
+        stack: err.stack?.split('\n').slice(0, 3).join(' | '),
+        clientId: input.clientId,
+        customerName: input.customerName,
+        startTime: input.startTime,
+      });
       return { success: false, error: err.message };
     }
   }
