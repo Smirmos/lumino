@@ -1,10 +1,11 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, Optional, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { and, eq, gte, lt, sql, inArray } from 'drizzle-orm';
 import sgMail from '@sendgrid/mail';
 import { Db } from '../db';
 import { appointments, clientConfigs, users, conversations } from '../db/schema';
+import { WhatsappService } from '../chatbot/whatsapp/whatsapp.service';
 
 interface CreateBookingInput {
   clientId: string;
@@ -32,6 +33,8 @@ export class BookingService {
   constructor(
     @Inject('DB') private readonly db: Db,
     private readonly config: ConfigService,
+    @Optional() @Inject(forwardRef(() => WhatsappService))
+    private readonly whatsappService?: WhatsappService,
   ) {
     const apiKey = this.config.get<string>('SENDGRID_API_KEY');
     this.emailEnabled = !!apiKey;
@@ -231,7 +234,7 @@ export class BookingService {
       return;
     }
 
-    // Find owner email
+    // Find owner email + WhatsApp config
     const [user] = await this.db
       .select({ email: users.email })
       .from(users)
@@ -239,6 +242,15 @@ export class BookingService {
       .limit(1);
 
     if (!user) return;
+
+    const [waConfig] = await this.db
+      .select({
+        managerPhone: clientConfigs.managerPhone,
+        whatsappPhoneId: clientConfigs.whatsappPhoneId,
+      })
+      .from(clientConfigs)
+      .where(eq(clientConfigs.id, clientId))
+      .limit(1);
 
     const acceptUrl = `${this.dashboardUrl}/api/booking-action?token=${data.actionToken}&action=accept`;
     const declineUrl = `${this.dashboardUrl}/api/booking-action?token=${data.actionToken}&action=decline`;
@@ -297,7 +309,34 @@ export class BookingService {
 
       this.logger.log(`Booking notification sent to ${user.email}`);
     } catch (err: any) {
-      this.logger.error('Failed to send booking notification', err.message);
+      this.logger.error('Failed to send booking notification email', err.message);
+    }
+
+    // Send WhatsApp notification to manager
+    if (this.whatsappService && waConfig?.managerPhone && waConfig?.whatsappPhoneId) {
+      try {
+        const waMessage = [
+          `📋 *New Booking Request*`,
+          ``,
+          `👤 *Customer:* ${data.customerName}`,
+          `📧 *Email:* ${data.customerEmail}`,
+          data.service ? `💇 *Service:* ${data.service}` : null,
+          `📅 *Date:* ${dateStr}`,
+          `🕐 *Time:* ${timeStr}`,
+          ``,
+          `Accept or decline:`,
+          `${this.dashboardUrl}/dashboard/bookings`,
+        ].filter(Boolean).join('\n');
+
+        await this.whatsappService.sendReply(
+          waConfig.managerPhone,
+          waMessage,
+          waConfig.whatsappPhoneId,
+        );
+        this.logger.log(`Booking WhatsApp notification sent to ${waConfig.managerPhone}`);
+      } catch (err: any) {
+        this.logger.error('Failed to send booking WhatsApp notification', err.message);
+      }
     }
   }
 
