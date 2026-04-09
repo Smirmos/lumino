@@ -190,8 +190,7 @@ export class AvailabilityService {
     for (const day of availability.slots) {
       const available = day.slots.filter((s) => s.available).map((s) => s.time);
       if (available.length > 0) {
-        const dateObj = new Date(day.date + 'T12:00:00');
-        const dateLabel = `${dayNames[day.dayOfWeek]} ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+        const dateLabel = `${dayNames[day.dayOfWeek]} ${day.date}`;
         lines.push(`${dateLabel}: ${available.join(', ')}`);
       }
     }
