@@ -60,6 +60,12 @@ export class BookingService {
       const startTime = new Date(input.startTime);
       const endTime = new Date(startTime.getTime() + duration * 60000);
 
+      // Reject bookings in the past (with 1 hour grace)
+      if (startTime.getTime() < Date.now() - 60 * 60000) {
+        this.logger.warn({ event: 'booking_rejected_past_date', startTime: startTime.toISOString(), clientId: input.clientId });
+        return { success: false, error: 'Cannot book in the past' };
+      }
+
       // 2. Check slot availability (count overlapping pending/confirmed)
       const [{ count }] = await this.db
         .select({ count: sql<number>`COUNT(*)::int` })

@@ -123,7 +123,9 @@ ${client.managerPhone ? `Direct the customer to contact our manager on WhatsApp:
 
     // BOOKING SYSTEM (if enabled)
     if (client.bookingEnabled && bookingAvailability) {
+      const todayStr = new Date().toISOString().slice(0, 10);
       sections.push(`## BOOKING SYSTEM
+Today's date: ${todayStr}
 You can help customers book appointments. Here are the available time slots:
 
 ${bookingAvailability}
