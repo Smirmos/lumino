@@ -56,9 +56,9 @@ export class AvailabilityService {
 
     const hours = businessHoursStructured as Record<string, { isOpen: boolean; openTime: string; closeTime: string }>;
 
-    // 2. Fetch existing bookings in date range
-    const from = new Date(fromDate + 'T00:00:00');
-    const to = new Date(toDate + 'T23:59:59');
+    // 2. Fetch existing bookings in date range (use wide UTC range to cover all timezones)
+    const from = new Date(fromDate + 'T00:00:00Z');
+    const to = new Date(toDate + 'T23:59:59Z');
 
     const existingBookings = await this.db
       .select({
@@ -119,6 +119,7 @@ export class AvailabilityService {
           bufferMinutes,
           maxConcurrentBookings,
           existingBookings,
+          timezone,
         );
         if (slots.length > 0) {
           result.push({
@@ -143,6 +144,7 @@ export class AvailabilityService {
     bufferMinutes: number,
     maxConcurrent: number,
     existingBookings: Array<{ startTime: Date | null; endTime: Date | null }>,
+    timezone: string,
   ): TimeSlot[] {
     const slots: TimeSlot[] = [];
     const [openH, openM] = openTime.split(':').map(Number);
@@ -153,13 +155,15 @@ export class AvailabilityService {
     const step = durationMinutes + bufferMinutes;
 
     const now = new Date();
+    const tzOffset = this.getTzOffsetString(`${date}T12:00:00`, timezone);
 
     for (let m = openMinutes; m + durationMinutes <= closeMinutes; m += step) {
       const hours = Math.floor(m / 60);
       const mins = m % 60;
       const timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 
-      const slotStart = new Date(`${date}T${timeStr}:00`);
+      // Parse slot time in client's timezone
+      const slotStart = new Date(`${date}T${timeStr}:00${tzOffset}`);
       const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60000);
 
       // Skip slots in the past
@@ -178,6 +182,21 @@ export class AvailabilityService {
     }
 
     return slots;
+  }
+
+  private getTzOffsetString(dateStr: string, tz: string): string {
+    try {
+      const d = new Date(dateStr + 'Z');
+      const utcStr = d.toLocaleString('en-US', { timeZone: 'UTC', hour12: false });
+      const tzStr = d.toLocaleString('en-US', { timeZone: tz, hour12: false });
+      const diffMs = new Date(tzStr).getTime() - new Date(utcStr).getTime();
+      const diffMin = Math.round(diffMs / 60000);
+      const sign = diffMin >= 0 ? '+' : '-';
+      const abs = Math.abs(diffMin);
+      return `${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`;
+    } catch {
+      return '+03:00';
+    }
   }
 
   formatSlotsForPrompt(availability: AvailabilityResult): string {

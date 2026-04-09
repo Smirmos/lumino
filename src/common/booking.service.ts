@@ -48,6 +48,7 @@ export class BookingService {
           slotDurationMinutes: clientConfigs.slotDurationMinutes,
           maxConcurrentBookings: clientConfigs.maxConcurrentBookings,
           businessName: clientConfigs.businessName,
+          timezone: clientConfigs.timezone,
         })
         .from(clientConfigs)
         .where(eq(clientConfigs.id, input.clientId))
@@ -57,7 +58,17 @@ export class BookingService {
 
       const duration = clientConfig.slotDurationMinutes ?? 60;
       const maxConcurrent = clientConfig.maxConcurrentBookings ?? 1;
-      const startTime = new Date(input.startTime);
+
+      // Parse startTime: if no timezone indicator, treat as client's local time
+      let startTime: Date;
+      const raw = input.startTime;
+      if (raw.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(raw)) {
+        startTime = new Date(raw);
+      } else {
+        const tz = clientConfig.timezone ?? 'Asia/Jerusalem';
+        const offset = this.getTzOffsetString(raw, tz);
+        startTime = new Date(raw + offset);
+      }
       const endTime = new Date(startTime.getTime() + duration * 60000);
 
       // Reject bookings in the past (with 1 hour grace)
@@ -184,6 +195,22 @@ export class BookingService {
       .limit(1);
 
     return appointment || null;
+  }
+
+  /** Get timezone offset string (e.g. "+03:00") for a given local datetime in a timezone */
+  private getTzOffsetString(dateStr: string, tz: string): string {
+    try {
+      const d = new Date(dateStr + 'Z'); // parse as UTC temporarily
+      const utcStr = d.toLocaleString('en-US', { timeZone: 'UTC', hour12: false });
+      const tzStr = d.toLocaleString('en-US', { timeZone: tz, hour12: false });
+      const diffMs = new Date(tzStr).getTime() - new Date(utcStr).getTime();
+      const diffMin = Math.round(diffMs / 60000);
+      const sign = diffMin >= 0 ? '+' : '-';
+      const abs = Math.abs(diffMin);
+      return `${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`;
+    } catch {
+      return '+03:00'; // fallback: Israel
+    }
   }
 
   private async notifyOwner(
