@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, UnauthorizedException, Headers, Logger, Inject } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, UnauthorizedException, Headers, Logger, Inject, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Db } from '../db';
@@ -201,5 +201,70 @@ export class InternalWhatsappController {
       wabaId,
       steps,
     };
+  }
+
+  @Post('create-template')
+  @HttpCode(200)
+  async createTemplate(
+    @Headers('x-internal-secret') secret: string,
+    @Body() body: { wabaId: string; name: string; language: string; header?: string; bodyText: string; footer?: string },
+  ) {
+    this.validateSecret(secret);
+    const token = this.configService.get<string>('META_ACCESS_TOKEN');
+    const { wabaId, name, language, header, bodyText, footer } = body;
+
+    const components: any[] = [];
+    if (header) {
+      components.push({ type: 'HEADER', format: 'TEXT', text: header });
+    }
+    components.push({
+      type: 'BODY',
+      text: bodyText,
+    });
+    if (footer) {
+      components.push({ type: 'FOOTER', text: footer });
+    }
+
+    try {
+      const { data } = await axios.post(
+        `${BASE}/${wabaId}/message_templates`,
+        {
+          name,
+          language,
+          category: 'UTILITY',
+          components,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 30000,
+        },
+      );
+      this.logger.log({ event: 'template_created', name, wabaId, id: data.id });
+      return { success: true, template: data };
+    } catch (err: any) {
+      const msg = err.response?.data?.error?.message || err.message;
+      this.logger.error({ event: 'template_create_failed', name, error: msg, detail: err.response?.data });
+      return { success: false, error: msg, detail: err.response?.data?.error };
+    }
+  }
+
+  @Get('template-status')
+  async templateStatus(
+    @Headers('x-internal-secret') secret: string,
+    @Query('wabaId') wabaId: string,
+    @Query('name') name: string,
+  ) {
+    this.validateSecret(secret);
+    const token = this.configService.get<string>('META_ACCESS_TOKEN');
+
+    try {
+      const { data } = await axios.get(
+        `${BASE}/${wabaId}/message_templates?name=${name}`,
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 },
+      );
+      return { success: true, templates: data.data };
+    } catch (err: any) {
+      return { success: false, error: err.response?.data?.error?.message || err.message };
+    }
   }
 }
