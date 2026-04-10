@@ -30,6 +30,6 @@ import { BookingService } from '../common/booking.service';
     AvailabilityService,
     BookingService,
   ],
-  exports: [ChatbotService, ClientConfigService, WhatsappService],
+  exports: [ChatbotService, ClientConfigService, WhatsappService, BookingService],
 })
 export class ChatbotModule {}

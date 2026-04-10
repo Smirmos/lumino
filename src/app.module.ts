@@ -21,7 +21,7 @@ import { InternalWhatsappController } from './common/internal-whatsapp.controlle
 import { InternalBookingController } from './common/internal-booking.controller';
 import { EmailService } from './common/email.service';
 import { AvailabilityService } from './common/availability.service';
-import { BookingService } from './common/booking.service';
+// BookingService is provided by ChatbotModule (needs WhatsappService injection)
 
 @Module({
   imports: [
@@ -61,7 +61,7 @@ import { BookingService } from './common/booking.service';
     EscalationNotifierModule,
   ],
   controllers: [HealthController, InternalCacheController, InternalEmailController, InternalPromotionsController, InternalWhatsappController, InternalBookingController],
-  providers: [AlertService, AlertSchedulerService, UsageRollupService, SummarizationService, EmailService, AvailabilityService, BookingService],
+  providers: [AlertService, AlertSchedulerService, UsageRollupService, SummarizationService, EmailService, AvailabilityService],
   exports: [AlertService],
 })
 export class AppModule implements NestModule {
