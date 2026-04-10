@@ -344,8 +344,6 @@ export class BookingService {
     appointmentId: string,
     action: 'confirmed' | 'declined',
   ): Promise<void> {
-    if (!this.emailEnabled) return;
-
     const [appt] = await this.db
       .select()
       .from(appointments)
@@ -355,7 +353,10 @@ export class BookingService {
     if (!appt) return;
 
     const [clientConfig] = await this.db
-      .select({ businessName: clientConfigs.businessName })
+      .select({
+        businessName: clientConfigs.businessName,
+        whatsappPhoneId: clientConfigs.whatsappPhoneId,
+      })
       .from(clientConfigs)
       .where(eq(clientConfigs.id, appt.clientId))
       .limit(1);
@@ -390,20 +391,57 @@ export class BookingService {
           <p>Please try booking a different time or contact the business directly.</p>
         </div>`;
 
-    try {
-      await sgMail.send({
-        from: this.fromEmail,
-        to: appt.customerEmail,
-        subject,
-        html,
-      });
-
-      await this.db
-        .update(appointments)
-        .set({ customerNotifiedAt: new Date() })
-        .where(eq(appointments.id, appointmentId));
-    } catch (err: any) {
-      this.logger.error('Failed to send customer notification', err.message);
+    // Email notification
+    if (this.emailEnabled) {
+      try {
+        await sgMail.send({
+          from: this.fromEmail,
+          to: appt.customerEmail,
+          subject,
+          html,
+        });
+      } catch (err: any) {
+        this.logger.error('Failed to send customer email notification', err.message);
+      }
     }
+
+    // WhatsApp notification to customer
+    if (this.whatsappService && appt.customerPhone && clientConfig?.whatsappPhoneId) {
+      try {
+        const waMsg = action === 'confirmed'
+          ? [
+              `✅ *Appointment Confirmed!*`,
+              ``,
+              `Your appointment with *${businessName}* is confirmed:`,
+              appt.service ? `💇 *Service:* ${appt.service}` : null,
+              `📅 *Date:* ${dateStr}`,
+              `🕐 *Time:* ${timeStr}`,
+              ``,
+              `See you then! If you need to cancel, please contact us directly.`,
+            ].filter(Boolean).join('\n')
+          : [
+              `❌ *Appointment Update*`,
+              ``,
+              `Unfortunately, *${businessName}* was unable to accommodate your booking for ${dateStr} at ${timeStr}.`,
+              appt.declineReason ? `\nReason: ${appt.declineReason}` : null,
+              ``,
+              `Please try booking a different time or contact us directly.`,
+            ].filter(Boolean).join('\n');
+
+        await this.whatsappService.sendReply(
+          appt.customerPhone,
+          waMsg,
+          clientConfig.whatsappPhoneId,
+        );
+        this.logger.log(`Customer WhatsApp notification sent to ${appt.customerPhone} (${action})`);
+      } catch (err: any) {
+        this.logger.error('Failed to send customer WhatsApp notification', err.message);
+      }
+    }
+
+    await this.db
+      .update(appointments)
+      .set({ customerNotifiedAt: new Date() })
+      .where(eq(appointments.id, appointmentId));
   }
 }
