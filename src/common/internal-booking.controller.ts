@@ -55,11 +55,9 @@ export class InternalBookingController {
     @Body() body: { appointmentId: string },
   ) {
     this.validateSecret(secret);
-    const success = await this.bookingService.confirmBooking(body.appointmentId);
-    if (success) {
-      await this.bookingService.notifyCustomer(body.appointmentId, 'confirmed');
-    }
-    return { success };
+    // Dashboard already updates status — just send notification
+    await this.bookingService.notifyCustomer(body.appointmentId, 'confirmed');
+    return { success: true };
   }
 
   @Post('decline')
@@ -69,11 +67,9 @@ export class InternalBookingController {
     @Body() body: { appointmentId: string; reason?: string },
   ) {
     this.validateSecret(secret);
-    const success = await this.bookingService.declineBooking(body.appointmentId, body.reason);
-    if (success) {
-      await this.bookingService.notifyCustomer(body.appointmentId, 'declined');
-    }
-    return { success };
+    // Dashboard already updates status — just send notification
+    await this.bookingService.notifyCustomer(body.appointmentId, 'declined');
+    return { success: true };
   }
 
   @Post('cancel')
