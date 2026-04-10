@@ -118,6 +118,7 @@ export class BookingService {
         appointmentId: appointment.id,
         customerName: input.customerName,
         customerEmail: input.customerEmail,
+        customerPhone: input.customerPhone,
         service: input.service,
         startTime,
         endTime,
@@ -222,6 +223,7 @@ export class BookingService {
       appointmentId: string;
       customerName: string;
       customerEmail: string;
+      customerPhone: string;
       service?: string;
       startTime: Date;
       endTime: Date;
@@ -273,6 +275,7 @@ export class BookingService {
 
         <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
           <tr><td style="padding:8px 0;color:#6b7280;width:130px;">Customer</td><td style="padding:8px 0;font-weight:600;">${data.customerName}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;">Phone</td><td style="padding:8px 0;"><a href="https://wa.me/${data.customerPhone}">${data.customerPhone}</a></td></tr>
           <tr><td style="padding:8px 0;color:#6b7280;">Email</td><td style="padding:8px 0;">${data.customerEmail}</td></tr>
           ${data.service ? `<tr><td style="padding:8px 0;color:#6b7280;">Service</td><td style="padding:8px 0;">${data.service}</td></tr>` : ''}
           <tr><td style="padding:8px 0;color:#6b7280;">Date</td><td style="padding:8px 0;font-weight:600;">${dateStr}</td></tr>
@@ -319,6 +322,7 @@ export class BookingService {
           `📋 *New Booking Request*`,
           ``,
           `👤 *Customer:* ${data.customerName}`,
+          `📞 *Phone:* ${data.customerPhone}`,
           `📧 *Email:* ${data.customerEmail}`,
           data.service ? `💇 *Service:* ${data.service}` : null,
           `📅 *Date:* ${dateStr}`,
