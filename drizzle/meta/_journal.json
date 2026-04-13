@@ -71,6 +71,13 @@
       "when": 1775652497596,
       "tag": "0009_giant_ma_gnuci",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1776330000000,
+      "tag": "0010_mobile_push_tokens",
+      "breakpoints": true
     }
   ]
 }

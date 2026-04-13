@@ -4,6 +4,7 @@ import sgMail from '@sendgrid/mail';
 import { Db } from '../db';
 import { users, conversations, messages } from '../db/schema';
 import { eq, and, desc } from 'drizzle-orm';
+import { MobilePushService } from './mobile-push.service';
 
 @Injectable()
 export class EscalationNotifierService {
@@ -15,6 +16,7 @@ export class EscalationNotifierService {
   constructor(
     @Inject('DB') private readonly db: Db,
     private readonly config: ConfigService,
+    private readonly mobilePush: MobilePushService,
   ) {
     const apiKey = this.config.get<string>('SENDGRID_API_KEY');
     this.emailEnabled = !!apiKey;
@@ -35,6 +37,32 @@ export class EscalationNotifierService {
     customerIdentifier: string,
     triggerReason: string,
   ): Promise<void> {
+    // Mobile push fires regardless of SendGrid availability — it's an
+    // independent channel and shouldn't be coupled to email setup.
+    const maskedId = `****${customerIdentifier.slice(-4)}`;
+    const channelLabel = channel === 'whatsapp' ? 'WhatsApp' : 'Instagram';
+
+    // Find conversation up-front so push payload can deep-link straight to it.
+    const convForPush = await this.db
+      .select({ id: conversations.id })
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.clientId, clientId),
+          eq(conversations.channel, channel),
+          eq(conversations.customerIdentifier, customerIdentifier),
+        ),
+      )
+      .limit(1);
+    const conversationIdForPush = convForPush[0]?.id;
+
+    void this.mobilePush.sendToClient(
+      clientId,
+      `Escalation · ${channelLabel}`,
+      `Customer ${maskedId}: ${triggerReason}`,
+      conversationIdForPush ? { route: `/conversations/${conversationIdForPush}` } : undefined,
+    );
+
     if (!this.emailEnabled) {
       this.logger.warn('SENDGRID_API_KEY not set — skipping escalation email');
       return;
@@ -89,8 +117,6 @@ export class EscalationNotifierService {
       recentMessages.reverse();
 
       // 4. Build email HTML
-      const maskedId = `****${customerIdentifier.slice(-4)}`;
-      const channelLabel = channel === 'whatsapp' ? 'WhatsApp' : 'Instagram';
       const dashboardLink = `${this.dashboardUrl}/dashboard/conversations/${conversationId}`;
 
       const messagesHtml = recentMessages

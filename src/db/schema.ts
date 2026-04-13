@@ -146,6 +146,27 @@ export const monthlyUsageRollup = pgTable('monthly_usage_rollup', {
   channelWhatsapp: integer('channel_whatsapp').default(0),
 });
 
+/**
+ * Mobile push notification tokens. One row per (user, device) — tokens
+ * change between Expo Go / dev / production builds and across reinstalls,
+ * so we key uniquely on the token itself and refresh lastSeenAt on each
+ * registration ping.
+ */
+export const mobilePushTokens = pgTable('mobile_push_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'cascade' }).notNull(),
+  expoToken: text('expo_token').notNull().unique(),
+  platform: text('platform').notNull(), // 'ios' | 'android'
+  deviceName: text('device_name'),
+  appVersion: text('app_version'),
+  createdAt: timestamp('created_at').defaultNow(),
+  lastSeenAt: timestamp('last_seen_at').defaultNow(),
+}, (t) => ({
+  clientIdx: index('push_client_idx').on(t.clientId),
+  userIdx: index('push_user_idx').on(t.userId),
+}));
+
 export const appointments = pgTable('appointments', {
   id: uuid('id').defaultRandom().primaryKey(),
   clientId: uuid('client_id').references(() => clientConfigs.id, { onDelete: 'cascade' }).notNull(),
