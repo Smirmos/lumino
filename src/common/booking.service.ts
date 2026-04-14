@@ -6,6 +6,7 @@ import sgMail from '@sendgrid/mail';
 import { Db } from '../db';
 import { appointments, clientConfigs, users, conversations } from '../db/schema';
 import { WhatsappService } from '../chatbot/whatsapp/whatsapp.service';
+import { MobilePushService } from './mobile-push.service';
 
 interface CreateBookingInput {
   clientId: string;
@@ -33,6 +34,7 @@ export class BookingService {
   constructor(
     @Inject('DB') private readonly db: Db,
     private readonly config: ConfigService,
+    private readonly mobilePush: MobilePushService,
     @Optional() @Inject(forwardRef(() => WhatsappService))
     private readonly whatsappService?: WhatsappService,
   ) {
@@ -231,6 +233,20 @@ export class BookingService {
       businessName: string;
     },
   ): Promise<void> {
+    // Mobile push — fires regardless of email config
+    const dateLabel = data.startTime.toLocaleDateString('en-IL', {
+      month: 'short', day: 'numeric',
+    });
+    const timeLabel = data.startTime.toLocaleTimeString('en-IL', {
+      hour: '2-digit', minute: '2-digit',
+    });
+    void this.mobilePush.sendToClient(
+      clientId,
+      `New Booking Request`,
+      `${data.customerName}${data.service ? ` · ${data.service}` : ''} — ${dateLabel} at ${timeLabel}`,
+      { route: '/bookings' },
+    );
+
     if (!this.emailEnabled) {
       this.logger.warn('SENDGRID_API_KEY not set — skipping booking notification');
       return;
